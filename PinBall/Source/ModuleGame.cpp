@@ -280,7 +280,7 @@ bool ModuleGame::Start()
 
 	rightFlipper = new Flipper(App->physics, 620, 300, true, box);
 	entities.push_back(rightFlipper);
-
+	// Push back spring entity AAA
 	return ret;
 }
 
@@ -346,6 +346,11 @@ update_status ModuleGame::Update()
 	{
 		entities.push_back(new Rick(App->physics, GetMouseX(), GetMouseY(), rick));
 	}
+	if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_UP)) // Edit this so that it's keyDown and needs timer to be 0 to start, make lots of IF statements cuz hardcode yippe, will fix later
+	{
+		TraceLog(LOG_INFO, "Activating spring...");
+	}
+	// Make timer here so that if KeyUp, Check if timer was above idk 3 seconds, do the code, and outside of the code, Timer = 0, so that even if it wasn't enough time it gets reset. AAA
 
 	if (IsKeyPressed(KEY_BACKSPACE))
 	{
