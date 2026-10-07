@@ -10,6 +10,7 @@
 
 class PhysBody;
 class PhysicEntity;
+class Flipper;
 
 
 class ModuleGame : public Module
@@ -43,4 +44,7 @@ public:
 	// Sensor at the bottom of the screen
 	PhysBody* sensor;
 	std::vector<PhysBody*> bodies_to_destroy;
+private:
+	Flipper* leftFlipper = NULL;
+	Flipper* rightFlipper = NULL;
 };

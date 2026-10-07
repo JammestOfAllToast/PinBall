@@ -33,33 +33,33 @@ bool ModulePhysics::Start()
 	b2BodyDef bd;
 	ground = world->CreateBody(&bd);
 
-	// Big circle in the middle of the screen
-	int x = (int)(SCREEN_WIDTH / 2);
-	int y = (int)(SCREEN_HEIGHT / 1.5f);
-	int diameter = SCREEN_WIDTH / 2;
+	//// Big circle in the middle of the screen
+	//int x = (int)(SCREEN_WIDTH / 2);
+	//int y = (int)(SCREEN_HEIGHT / 1.5f);
+	//int diameter = SCREEN_WIDTH / 2;
 
-	// Homework: dynamic, so a joint can make it rotate
-	b2BodyDef body;
-	body.type = b2_dynamicBody;
-	body.position.Set(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y));
+	//// Homework: dynamic, so a joint can make it rotate
+	//b2BodyDef body;
+	//body.type = b2_dynamicBody;
+	//body.position.Set(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y));
 
-	b2Body* big_ball = world->CreateBody(&body);
+	//b2Body* big_ball = world->CreateBody(&body);
 
-	b2CircleShape shape;
-	shape.m_radius = PIXEL_TO_METERS(diameter) * 0.5f;
+	//b2CircleShape shape;
+	//shape.m_radius = PIXEL_TO_METERS(diameter) * 0.5f;
 
-	b2FixtureDef fixture;
-	fixture.shape = &shape;
-	fixture.density = 1.0f;
-	big_ball->CreateFixture(&fixture);
+	//b2FixtureDef fixture;
+	//fixture.shape = &shape;
+	//fixture.density = 1.0f;
+	//big_ball->CreateFixture(&fixture);
 
-	// Homework: revolute joint to the ground at its center, with a motor to spin it
-	b2RevoluteJointDef revolute;
-	revolute.Initialize(ground, big_ball, big_ball->GetWorldCenter());
-	revolute.enableMotor = true;
-	revolute.maxMotorTorque = 100000.0f;
-	revolute.motorSpeed = 0.25f * b2_pi; // rad/s
-	world->CreateJoint(&revolute);
+	//// Homework: revolute joint to the ground at its center, with a motor to spin it
+	//b2RevoluteJointDef revolute;
+	//revolute.Initialize(ground, big_ball, big_ball->GetWorldCenter());
+	//revolute.enableMotor = true;
+	//revolute.maxMotorTorque = 100000.0f;
+	//revolute.motorSpeed = 0.25f * b2_pi; // rad/s
+	//world->CreateJoint(&revolute);
 
 	return true;
 }

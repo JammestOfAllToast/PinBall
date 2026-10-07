@@ -175,6 +175,75 @@ private:
 	Texture2D texture;
 };
 
+// -------- OUR ENTITIES ----------
+
+class Flipper : public PhysicEntity {
+private:
+	bool side;
+	const bool left = 0;
+	const bool right = 1;
+
+	const float speed = 7.5f * b2_pi;
+	const float limit = 0.25;
+	bool flip;
+
+	b2RevoluteJoint* joint;
+	Texture2D texture;
+public:
+	Flipper(ModulePhysics* physics, int _x, int _y, bool _side, Texture2D _texture)
+		: PhysicEntity(physics->CreateRectangle(_x, _y, 50, 25))
+		, texture(_texture), side(_side)
+	{
+		b2RevoluteJointDef revolute;
+		revolute.Initialize(physics->ground, body->body, b2Vec2(side == left ? -1 : 1 * 0.8, 0) + body->body->GetWorldCenter());
+		revolute.enableMotor = true;
+		revolute.maxMotorTorque = 100000.0f;
+		//revolute.lowerAngle = side == left ? 0.25 : -0.25f * b2_pi;
+		//revolute.enableLimit = true; ASK PEDRO!!!
+		joint = (b2RevoluteJoint*)physics->world->CreateJoint(&revolute);
+
+	}
+
+	void Update() override {
+		int x, y;
+		body->GetPosition(x, y);
+		joint->SetMotorSpeed(0);
+
+		if (flip) {
+			if (side == left) {
+				if (joint->GetJointAngle() >= -limit * b2_pi) joint->SetMotorSpeed(-speed);
+			}
+			else {
+				if (joint->GetJointAngle() <= limit * b2_pi) joint->SetMotorSpeed(speed);
+			}
+			
+		}
+		else {
+			if (side == left) {
+				if (joint->GetJointAngle() <= limit * b2_pi) joint->SetMotorSpeed(speed);
+			}
+			else {
+				if (joint->GetJointAngle() >= -limit * b2_pi) joint->SetMotorSpeed(-speed);
+			}
+		}
+		
+
+		Color tint = WHITE;
+
+		Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
+		Rectangle dest = { (float)x, (float)y, (float)texture.width, (float)texture.height };
+		Vector2 origin = { (float)texture.width / 2.0f, (float)texture.height / 2.0f };
+		DrawTexturePro(texture, source, dest, origin, body->GetRotation() * RAD2DEG, tint);
+	}
+
+	void SetFlip(bool _flip) {
+		flip = _flip;
+	}
+
+};
+
+// -------- END OUR ENTITIES ------
+
 ModuleGame::ModuleGame(Application* app, bool start_enabled) : Module(app, start_enabled)
 {
 	ray_on = false;
@@ -202,6 +271,14 @@ bool ModuleGame::Start()
 	// Sensor at the bottom of the screen
 	sensor = App->physics->CreateRectangleSensor(SCREEN_WIDTH / 2, SCREEN_HEIGHT, SCREEN_WIDTH / 2, 25);
 	sensor->listener = this;
+
+
+	// Temp until we understand how scenes are implemented here
+	leftFlipper = new Flipper(App->physics, 500, 300, false, box);
+	entities.push_back(leftFlipper);
+
+	rightFlipper = new Flipper(App->physics, 620, 300, true, box);
+	entities.push_back(rightFlipper);
 
 	return ret;
 }
@@ -273,6 +350,13 @@ update_status ModuleGame::Update()
 	{
 		DestroyAllEntities();
 	}
+
+
+	leftFlipper->SetFlip(IsKeyDown(KEY_LEFT));
+	rightFlipper->SetFlip(IsKeyDown(KEY_RIGHT));
+	
+
+
 
 	// Prepare for raycast ------------------------------------------------------
 

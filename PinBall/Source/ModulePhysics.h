@@ -56,12 +56,15 @@ public:
 
 	void BeginContact(b2Contact* contact) override;
 
+	b2World* world;
+	b2Body* ground;
+
 private:
 
 	bool debug;
-	b2World* world;
+	
 
 	// Static body with no fixtures, needed to create joints like the mouse joint
-	b2Body* ground;
+	
 	b2MouseJoint* mouse_joint;
 };
