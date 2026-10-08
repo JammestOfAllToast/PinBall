@@ -294,7 +294,7 @@ public:
 
 };
 
-class Obstacle : public PhysicEntity
+class Obstacle : public PhysicEntity // Remembver to set to kinematic pls we don't want it moving -Mr. D
 {
 private:
 
