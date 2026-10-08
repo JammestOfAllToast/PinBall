@@ -42,7 +42,7 @@ public:
 	{
 		int x, y;
 		body->GetPosition(x, y);
-
+		body->body->SetBullet(true);
 		// Red when the mouse is inside the body
 		Color tint = body->Contains(GetMouseX(), GetMouseY()) ? RED : WHITE;
 
@@ -245,7 +245,7 @@ public:
 
 class Spring : public PhysicEntity { // Spring Class goes here -Mr. D
 private:
-	b2MotorJoint* joint;
+	b2PrismaticJoint* joint;
 	Texture2D texture;
 	float k = 5;
 	bool ret;
@@ -257,6 +257,9 @@ public:
 		body->body->SetGravityScale(0.0);
 		initial_y = _y;
 		body->body->SetFixedRotation(true);
+		b2PrismaticJointDef prism;
+		prism.Initialize(physics->ground, body->body, b2Vec2(0, 0), b2Vec2(0, 1));
+		joint = (b2PrismaticJoint*)physics->world->CreateJoint(&prism);
 	}
 	void Update() override {
 		// AAAAAAAAAAA -Mr.D
@@ -271,10 +274,11 @@ public:
 			body->body->SetLinearVelocity(b2Vec2(0, 0));
 		}
 		else if (y <= initial_y - 0.5 || y >= initial_y + 0.5){
-			//apply hooks law
+			//hooke's law:
 			body->body->ApplyForceToCenter(b2Vec2(0, -k* (y - initial_y) - body->body->GetLinearVelocity().y * k ), true);
 		}
 		else {
+			//Clamping
 			body->body->SetLinearVelocity(b2Vec2(0, 0));
 		}
 
