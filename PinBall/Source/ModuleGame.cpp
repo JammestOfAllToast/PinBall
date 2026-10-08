@@ -243,6 +243,53 @@ public:
 
 };
 
+class Spring : public PhysicEntity { // Spring Class goes here -Mr. D
+private:
+	b2MotorJoint* joint;
+	Texture2D texture;
+	float k = 5;
+	bool ret;
+	int initial_y;
+	int max_y = 300;
+
+public:
+	Spring(ModulePhysics* physics, int _x, int _y, Texture2D _texture) : PhysicEntity(physics->CreateRectangle(_x, _y, 20, 20)), texture(_texture) {
+		body->body->SetGravityScale(0.0);
+		initial_y = _y;
+		body->body->SetFixedRotation(true);
+	}
+	void Update() override {
+		// AAAAAAAAAAA -Mr.D
+		int x, y;
+		body->GetPosition(x, y);
+		if (ret && y-initial_y < max_y ) {
+			//retract
+			body->body->SetLinearVelocity(b2Vec2(0, 5));
+		}
+		else if (ret) {
+			//max y reached
+			body->body->SetLinearVelocity(b2Vec2(0, 0));
+		}
+		else if (y <= initial_y - 0.5 || y >= initial_y + 0.5){
+			//apply hooks law
+			body->body->ApplyForceToCenter(b2Vec2(0, -k* (y - initial_y) - body->body->GetLinearVelocity().y * k ), true);
+		}
+		else {
+			body->body->SetLinearVelocity(b2Vec2(0, 0));
+		}
+
+		Color tint = WHITE;
+
+		Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
+		Rectangle dest = { (float)x, (float)y, (float)texture.width, (float)texture.height };
+		Vector2 origin = { (float)texture.width / 2.0f, (float)texture.height / 2.0f };
+		DrawTexturePro(texture, source, dest, origin, body->GetRotation() * RAD2DEG, tint);
+	}
+
+	void Retract(bool _ret) { ret = _ret; }
+
+};
+
 class Obstacle : public PhysicEntity
 {
 private:
@@ -303,6 +350,9 @@ bool ModuleGame::Start()
 	int p[16] = {40, 40,  40, 600,  480, 600,  480, 700,  800, 700,  800, 600,  1240, 600,  1240, 40};
 	worldBoundary = new Obstacle(App->physics, 0, 0, p, 16);
 	//Note that world boundary is not within entities... I'll check if that's ok with rodrigo, but this is to avoid having it be deleted on backspace, furthermore, it does not need to have any checks so....
+
+	spring = new Spring(App->physics, 750, 200, box);
+	entities.push_back(spring);
 
 	return ret;
 }
@@ -369,7 +419,11 @@ update_status ModuleGame::Update()
 	{
 		entities.push_back(new Rick(App->physics, GetMouseX(), GetMouseY(), rick));
 	}
-
+	if (IsKeyPressed(KEY_SPACE)) // Edit this so that it's keyDown and needs timer to be 0 to start, make lots of IF statements cuz hardcode yippe, will fix later
+	{
+		TraceLog(LOG_INFO, "Activating spring...");
+		
+	}
 	if (IsKeyPressed(KEY_BACKSPACE))
 	{
 		DestroyAllEntities();
@@ -378,6 +432,8 @@ update_status ModuleGame::Update()
 
 	leftFlipper->SetFlip(IsKeyDown(KEY_LEFT));
 	rightFlipper->SetFlip(IsKeyDown(KEY_RIGHT));
+
+	spring->Retract(IsKeyDown(KEY_SPACE));
 	
 
 
