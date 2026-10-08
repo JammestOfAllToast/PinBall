@@ -51,6 +51,7 @@ public:
 	PhysBody* CreateRectangle(int x, int y, int half_width, int half_height);
 	PhysBody* CreateRectangleSensor(int x, int y, int half_width, int half_height);
 	PhysBody* CreateChain(int x, int y, const int* points, int size);
+	PhysBody* CreateChain(int x, int y, const int* points, int size, float restitution);
 
 	void DestroyBody(PhysBody* pbody);
 

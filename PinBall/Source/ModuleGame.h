@@ -11,6 +11,7 @@
 class PhysBody;
 class PhysicEntity;
 class Flipper;
+class Obstacle;
 
 
 class ModuleGame : public Module
@@ -47,4 +48,5 @@ public:
 private:
 	Flipper* leftFlipper = NULL;
 	Flipper* rightFlipper = NULL;
+	Obstacle* worldBoundary = NULL;
 };

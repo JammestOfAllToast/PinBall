@@ -243,6 +243,24 @@ public:
 
 };
 
+class Obstacle : public PhysicEntity
+{
+private:
+
+public:
+	Obstacle(ModulePhysics* physics, int _x, int _y, int* _points, int _size)
+		: PhysicEntity(physics->CreateChain(_x, _y, _points, _size, 0.75))
+	{
+
+	}
+
+	void Update() override
+	{
+		// No texture: press F1 to see it
+	}
+
+};
+
 // -------- END OUR ENTITIES ------
 
 ModuleGame::ModuleGame(Application* app, bool start_enabled) : Module(app, start_enabled)
@@ -280,6 +298,11 @@ bool ModuleGame::Start()
 
 	rightFlipper = new Flipper(App->physics, 620, 300, true, box);
 	entities.push_back(rightFlipper);
+
+
+	int p[16] = {40, 40,  40, 600,  480, 600,  480, 700,  800, 700,  800, 600,  1240, 600,  1240, 40};
+	worldBoundary = new Obstacle(App->physics, 0, 0, p, 16);
+	//Note that world boundary is not within entities... I'll check if that's ok with rodrigo, but this is to avoid having it be deleted on backspace, furthermore, it does not need to have any checks so....
 
 	return ret;
 }
