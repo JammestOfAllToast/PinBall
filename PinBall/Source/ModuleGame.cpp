@@ -243,6 +243,30 @@ public:
 
 };
 
+class Spring : public PhysicEntity { // Spring Class goes here -Mr. D
+private:
+	b2MotorJoint* joint;
+	Texture2D texture;
+public:
+	Spring(ModulePhysics* physics, int _x, int _y, Texture2D _texture) : PhysicEntity(physics->CreateRectangle(_x, _y, 20, 20)), texture(_texture) {
+		b2MotorJointDef mtor;
+		mtor.Initialize(physics->ground, body->body); // Edit this for it to be an actula spring
+		joint = (b2MotorJoint*)physics->world->CreateJoint(&mtor);
+	}
+	void Update() override {
+		// AAAAAAAAAAA -Mr.D
+		int x, y;
+		body->GetPosition(x, y);
+		
+		Color tint = WHITE;
+
+		Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
+		Rectangle dest = { (float)x, (float)y, (float)texture.width, (float)texture.height };
+		Vector2 origin = { (float)texture.width / 2.0f, (float)texture.height / 2.0f };
+		DrawTexturePro(texture, source, dest, origin, body->GetRotation() * RAD2DEG, tint);
+	}
+
+};
 // -------- END OUR ENTITIES ------
 
 ModuleGame::ModuleGame(Application* app, bool start_enabled) : Module(app, start_enabled)
@@ -280,7 +304,10 @@ bool ModuleGame::Start()
 
 	rightFlipper = new Flipper(App->physics, 620, 300, true, box);
 	entities.push_back(rightFlipper);
-	// Push back spring entity AAA
+	
+	spring = new Spring(App->physics, 600, 200, box);
+	entities.push_back(spring);
+
 	return ret;
 }
 
@@ -346,9 +373,13 @@ update_status ModuleGame::Update()
 	{
 		entities.push_back(new Rick(App->physics, GetMouseX(), GetMouseY(), rick));
 	}
-	if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_UP)) // Edit this so that it's keyDown and needs timer to be 0 to start, make lots of IF statements cuz hardcode yippe, will fix later
+	if (IsKeyPressed(KEY_SPACE)) // Edit this so that it's keyDown and needs timer to be 0 to start, make lots of IF statements cuz hardcode yippe, will fix later
 	{
 		TraceLog(LOG_INFO, "Activating spring...");
+		
+	}
+	if (IsKeyDown(KEY_SPACE)) {
+		
 	}
 	// Make timer here so that if KeyUp, Check if timer was above idk 3 seconds, do the code, and outside of the code, Timer = 0, so that even if it wasn't enough time it gets reset. AAA
 
