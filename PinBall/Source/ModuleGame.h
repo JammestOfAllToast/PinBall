@@ -13,6 +13,7 @@ class PhysicEntity;
 class Flipper;
 class Obstacle;
 class Spring;
+class Bumper;
 
 
 class ModuleGame : public Module
@@ -30,9 +31,12 @@ public:
 	void DestroyEntity(PhysicEntity* entity);
 	void DestroyAllEntities();
 
+	void NextBall();
+
 public:
 
 	std::vector<PhysicEntity*> entities;
+	std::vector<Bumper*> bumpers;
 
 	Texture2D circle;
 	Texture2D box;
@@ -43,6 +47,10 @@ public:
 	vec2<int> ray;
 	bool ray_on;
 
+	int score;
+	int highscore;
+	int lives;
+
 	// Sensor at the bottom of the screen
 	PhysBody* sensor;
 	std::vector<PhysBody*> bodies_to_destroy;
@@ -51,4 +59,5 @@ private:
 	Flipper* rightFlipper = NULL;
 	Spring* spring = NULL;
 	Obstacle* worldBoundary = NULL;
+	PhysBody* deathSensor;
 };

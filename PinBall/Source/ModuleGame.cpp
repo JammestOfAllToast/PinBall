@@ -295,6 +295,7 @@ public:
 };
 
 class Obstacle : public PhysicEntity // Remembver to set to kinematic pls we don't want it moving -Mr. D
+									//no need, its a chain! - Jam
 {
 private:
 
@@ -311,6 +312,44 @@ public:
 	}
 
 };
+
+class Bumper : public PhysicEntity {
+private:
+	Texture2D texture;
+public:
+	int points;
+
+	Bumper(ModulePhysics* physics, int _x, int _y, int _points, Texture2D _texture)
+		: PhysicEntity(physics->CreateCircle(_x, _y, 25, 0.5, b2_kinematicBody))
+		, texture(_texture), points(_points)
+	{
+
+	}
+	//Overloaded so that sensors can now be crated the same way as normal bumpers!
+	Bumper(ModulePhysics* physics, int _x, int _y, int _half_width, int _half_height, int _points)
+		: PhysicEntity(physics->CreateRectangleSensor(_x, _y, _half_width, _half_height))
+		, points(_points)
+	{
+
+	}
+
+	void Update() override
+	{
+		int x, y;
+		body->GetPosition(x, y);
+		body->body->SetBullet(true);
+
+		Color tint = WHITE;
+
+		// Box2D positions are the center of the body: draw the texture around its center
+		Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
+		Rectangle dest = { (float)x, (float)y, (float)texture.width, (float)texture.height };
+		Vector2 origin = { (float)texture.width / 2.0f, (float)texture.height / 2.0f };
+		DrawTexturePro(texture, source, dest, origin, body->GetRotation() * RAD2DEG, tint);
+	}
+};
+
+
 
 // -------- END OUR ENTITIES ------
 
@@ -342,6 +381,12 @@ bool ModuleGame::Start()
 	sensor = App->physics->CreateRectangleSensor(SCREEN_WIDTH / 2, SCREEN_HEIGHT, SCREEN_WIDTH / 2, 25);
 	sensor->listener = this;
 
+	//Death Sensor
+	deathSensor = App->physics->CreateRectangleSensor(SCREEN_WIDTH / 2, SCREEN_HEIGHT, SCREEN_WIDTH / 2, 40);
+
+	//Initialize score to 0 and lives to 3
+	score = 0;
+	lives = 3;
 
 	// Temp until we understand how scenes are implemented here
 	leftFlipper = new Flipper(App->physics, 500, 300, false, box);
@@ -357,6 +402,10 @@ bool ModuleGame::Start()
 
 	spring = new Spring(App->physics, 750, 200, box);
 	entities.push_back(spring);
+
+	bumpers.push_back(new Bumper(App->physics, 50, 50, 50, circle));
+	bumpers.push_back(new Bumper(App->physics, 100, 500, 50, circle));
+	bumpers.push_back(new Bumper(App->physics, 800, 500, 100, 100, 10));
 
 	return ret;
 }
@@ -424,6 +473,7 @@ update_status ModuleGame::Update()
 		entities.push_back(new Rick(App->physics, GetMouseX(), GetMouseY(), rick));
 	}
 	if (IsKeyPressed(KEY_SPACE)) // Edit this so that it's keyDown and needs timer to be 0 to start, make lots of IF statements cuz hardcode yippe, will fix later
+								// you still gonna do that or can we remove these? -Jam
 	{
 		TraceLog(LOG_INFO, "Activating spring...");
 		
@@ -438,7 +488,6 @@ update_status ModuleGame::Update()
 	rightFlipper->SetFlip(IsKeyDown(KEY_RIGHT));
 
 	spring->Retract(IsKeyDown(KEY_SPACE));
-	
 
 
 
@@ -504,6 +553,19 @@ void ModuleGame::OnCollision(PhysBody* bodyA, PhysBody* bodyB)
 	if (bodyB == sensor)
 		return;
 
+	if (bodyB == deathSensor) {
+		ModuleGame::NextBall();
+		return;
+	}
+
+	for (Bumper* bumper : bumpers) {
+		if (bodyB == bumper->body) {
+			score += bumper->points;
+			TraceLog(LOG_INFO, "BALL HIT MUMPER!: SCORE: %d", score);
+			return;
+		}
+	}
+
 	App->audio->PlayFx(bonus_fx);
 }
 
@@ -523,4 +585,9 @@ void ModuleGame::DestroyAllEntities()
 	}
 	entities.clear();
 	bodies_to_destroy.clear();
+}
+
+void ModuleGame::NextBall() {
+	lives--;
+	TraceLog(LOG_INFO, "BALL DOWN! LIVES: %d", lives);
 }
