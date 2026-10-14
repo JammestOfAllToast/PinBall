@@ -194,13 +194,14 @@ public:
 		: PhysicEntity(physics->CreateRectangle(_x, _y, 50, 26))
 		, texture(_texture), side(_side)
 	{
+		body->body->SetGravityScale(0.0);
 		b2RevoluteJointDef revolute;
 		if (side) revolute.Initialize(physics->ground, body->body, b2Vec2(0.8, 0) + body->body->GetWorldCenter());
-		if (!side) revolute.Initialize(physics->ground, body->body, b2Vec2(-0.8, 0) + body->body->GetWorldCenter());
+		else revolute.Initialize(physics->ground, body->body, b2Vec2(-0.8, 0) + body->body->GetWorldCenter());
 		revolute.enableMotor = true;
 		revolute.maxMotorTorque = 100000.0f;
 		//revolute.lowerAngle = side == left ? 0.25 : -0.25f * b2_pi;
-		//revolute.enableLimit = true; ASK PEDRO!!!
+		//revolute.enableLimit = true; 
 		joint = (b2RevoluteJoint*)physics->world->CreateJoint(&revolute);
 
 	}
@@ -213,6 +214,7 @@ public:
 		if (flip) {
 			if (side == left) {
 				if (joint->GetJointAngle() >= -limit * b2_pi) joint->SetMotorSpeed(-speed);
+				
 			}
 			else {
 				if (joint->GetJointAngle() <= limit * b2_pi) joint->SetMotorSpeed(speed);
@@ -488,7 +490,7 @@ update_status ModuleGame::Update()
 	rightFlipper->SetFlip(IsKeyDown(KEY_RIGHT));
 
 	spring->Retract(IsKeyDown(KEY_SPACE));
-
+	ui.update();
 
 
 	// Prepare for raycast ------------------------------------------------------

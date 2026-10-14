@@ -50,6 +50,7 @@ public:
 	PhysBody* CreateCircle(int x, int y, int radius);
 	PhysBody* CreateCircle(int x, int y, int radius, float _restitution, b2BodyType _type);
 	PhysBody* CreateRectangle(int x, int y, int half_width, int half_height);
+	PhysBody* CreateRectangle(int x, int y, int half_width, int half_height, float _restitution, b2BodyType _type);
 	PhysBody* CreateRectangleSensor(int x, int y, int half_width, int half_height);
 	PhysBody* CreateChain(int x, int y, const int* points, int size);
 	PhysBody* CreateChain(int x, int y, const int* points, int size, float restitution);
