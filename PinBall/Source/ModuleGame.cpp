@@ -410,6 +410,7 @@ bool ModuleGame::Start()
 	bumpers.push_back(new Bumper(App->physics, 800, 500, 100, 100, 10));
 
 	return ret;
+	ui.Start(App);
 }
 
 // Unload assets

@@ -23,7 +23,7 @@ class Bumper;
 
 class UI {
 private:
-	ModuleRender* render;
+	Application* App;
 	enum colorKey {
 		DarkBlue, MidBlue, LightBlue,
 		DarkRed, MidRed, LightRed,
@@ -38,8 +38,8 @@ private:
 								CLITERAL(Color) { 133, 74, 25, 255 }, CLITERAL(Color) { 200, 96, 78, 255 }, CLITERAL(Color) { 234, 174, 62, 255 }, 
 								CLITERAL(Color) { 132, 107, 70, 255 }, CLITERAL(Color) { 199, 169, 128, 255 }, CLITERAL(Color) { 234, 198, 152, 255 }, CLITERAL(Color) { 252, 246, 221, 255 } };
 public:
-	UI() {
-		
+	void Start(Application* _app) {
+		App = _app;
 	}
 
 	void update() {//200, 190
@@ -83,7 +83,9 @@ public:
 
 	int score;
 	int highscore;
+	int prevscore;
 	int lives;
+	std::vector<Leader> leaderboard;
 
 	// Sensor at the bottom of the screen
 	PhysBody* sensor;
