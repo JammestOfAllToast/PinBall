@@ -45,7 +45,7 @@ public:
 	void update() {//200, 190
 		//DrawText("Made By MC Physics", 1040, 15, 10, )
 		for (int i = 0; i < 16; i++) {
-			DrawRectangle(i*15, 100, 10, 10, pallette[i]);
+			DrawRectangle(i*15, 100, 10, 10, palette[i]);
 		}
 	}
 };
