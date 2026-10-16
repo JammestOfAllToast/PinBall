@@ -360,6 +360,7 @@ ModuleGame::ModuleGame(Application* app, bool start_enabled) : Module(app, start
 	ray_on = false;
 	ray.x = ray.y = 0;
 	sensor = NULL;
+	ui = new UI();
 }
 
 ModuleGame::~ModuleGame()
@@ -386,10 +387,6 @@ bool ModuleGame::Start()
 	//Death Sensor
 	deathSensor = App->physics->CreateRectangleSensor(SCREEN_WIDTH / 2, SCREEN_HEIGHT, SCREEN_WIDTH / 2, 40);
 
-	//Initialize score to 0 and lives to 3
-	score = 0;
-	lives = 3;
-
 	// Temp until we understand how scenes are implemented here
 	leftFlipper = new Flipper(App->physics, 500, 300, false, box);
 	entities.push_back(leftFlipper);
@@ -409,8 +406,12 @@ bool ModuleGame::Start()
 	bumpers.push_back(new Bumper(App->physics, 100, 500, 50, circle));
 	bumpers.push_back(new Bumper(App->physics, 800, 500, 100, 100, 10));
 
+	//Start UI
+	ui->Start(App);
+
+	//(Re) set game variables
+	Reset();
 	return ret;
-	ui.Start(App);
 }
 
 // Unload assets
@@ -426,7 +427,7 @@ bool ModuleGame::CleanUp()
 	UnloadTexture(circle);
 	UnloadTexture(box);
 	UnloadTexture(rick);
-
+	delete ui;
 	return true;
 }
 
@@ -481,17 +482,54 @@ update_status ModuleGame::Update()
 		TraceLog(LOG_INFO, "Activating spring...");
 		
 	}
-	if (IsKeyPressed(KEY_BACKSPACE))
+	if (IsKeyPressed(KEY_DELETE))
 	{
 		DestroyAllEntities();
 	}
 
+	int key;
+	switch (gameState) {
+	case RESET:
+		gameState = LOOP;
+		break;
+	case LOOP:
+		leftFlipper->SetFlip(IsKeyDown(KEY_LEFT));
+		rightFlipper->SetFlip(IsKeyDown(KEY_RIGHT));
 
-	leftFlipper->SetFlip(IsKeyDown(KEY_LEFT));
-	rightFlipper->SetFlip(IsKeyDown(KEY_RIGHT));
+		spring->Retract(IsKeyDown(KEY_SPACE));
+		break;
+	case GAMEOVER:
+		key = GetCharPressed();
+		while (key > 0) {
+			if ((key >= 32) && (key <= 125) && (ui->GOnameSize < 3)) {
+				ui->GOname[ui->GOnameSize] = (char)key;
+				ui->GOname[ui->GOnameSize+1] = '\0';
+				ui->GOnameSize++;
+			}
+			key = GetCharPressed();
+		}
+		if (IsKeyPressed(KEY_BACKSPACE))
+		{
+			ui->GOnameSize--;
+			if (ui->GOnameSize < 0) ui->GOnameSize = 0;
+			ui->GOname[ui->GOnameSize] = '\0';
+			
+		}
+		if (IsKeyPressed(KEY_ENTER)) {
+			Leader l;
+			l.score = score;
+			for (int i = 0; i < ui->GOnameSize; i++) {
+				l.name[i] = ui->GOname[i];
+			}
+			leaderboard.push_back(l);
+			Reset();
+		}
+		break;
 
-	spring->Retract(IsKeyDown(KEY_SPACE));
-	ui.update();
+	default:
+		TraceLog(LOG_ERROR, "Game State Is Not Defined");
+		break;
+	}
 
 
 	// Prepare for raycast ------------------------------------------------------
@@ -522,6 +560,8 @@ update_status ModuleGame::Update()
 		}
 	}
 
+
+	ui->update();
 	// ray -----------------
 	if (ray_on == true)
 	{
@@ -557,7 +597,7 @@ void ModuleGame::OnCollision(PhysBody* bodyA, PhysBody* bodyB)
 		return;
 
 	if (bodyB == deathSensor) {
-		ModuleGame::NextBall();
+		ModuleGame::Loss();
 		return;
 	}
 
@@ -590,7 +630,18 @@ void ModuleGame::DestroyAllEntities()
 	bodies_to_destroy.clear();
 }
 
-void ModuleGame::NextBall() {
+void ModuleGame::Loss() {
 	lives--;
+	if (lives <= 0) {
+		gameState = GAMEOVER;
+	}
 	TraceLog(LOG_INFO, "BALL DOWN! LIVES: %d", lives);
+}
+
+void ModuleGame::Reset() {
+	gameState = RESET;
+	lives = MaxLives;
+	prevscore = score;
+	score = 0;
+	gameState = LOOP;
 }

@@ -10,8 +10,8 @@
 
 struct Leader
 {
-	int score;
-	char name[3];
+	int score = 0;
+	char name[4] = "\0";
 };
 
 class PhysBody;
@@ -20,35 +20,7 @@ class Flipper;
 class Obstacle;
 class Spring;
 class Bumper;
-
-class UI {
-private:
-	Application* App;
-	enum colorKey {
-		DarkBlue, MidBlue, LightBlue,
-		DarkRed, MidRed, LightRed,
-		DarkGreen, MidGreen, LightGreen,
-		DarkOrange, Salmon, Yellow,
-		DarkBeige, MidLightBeige, MidBeige, LightBeige
-
-	};
-	const Color palette[16] = {CLITERAL(Color) { 36, 34, 84, 255 }, CLITERAL(Color) { 43, 45, 122, 255 }, CLITERAL(Color) { 66, 82, 164, 255 }, 
-								CLITERAL(Color) { 39, 22, 24, 255 }, CLITERAL(Color) { 77, 22, 58, 255 }, CLITERAL(Color) { 130, 32, 88, 255 }, 
-								CLITERAL(Color) { 21, 111, 75, 255 }, CLITERAL(Color) { 67, 168, 125, 255 }, CLITERAL(Color) { 132, 199, 179, 255 }, 
-								CLITERAL(Color) { 133, 74, 25, 255 }, CLITERAL(Color) { 200, 96, 78, 255 }, CLITERAL(Color) { 234, 174, 62, 255 }, 
-								CLITERAL(Color) { 132, 107, 70, 255 }, CLITERAL(Color) { 199, 169, 128, 255 }, CLITERAL(Color) { 234, 198, 152, 255 }, CLITERAL(Color) { 252, 246, 221, 255 } };
-public:
-	void Start(Application* _app) {
-		App = _app;
-	}
-
-	void update() {//200, 190
-		//DrawText("Made By MC Physics", 1040, 15, 10, )
-		for (int i = 0; i < 16; i++) {
-			DrawRectangle(i*15, 100, 10, 10, palette[i]);
-		}
-	}
-};
+class UI;
 
 class ModuleGame : public Module
 {
@@ -65,7 +37,8 @@ public:
 	void DestroyEntity(PhysicEntity* entity);
 	void DestroyAllEntities();
 
-	void NextBall();
+	void Loss();
+	void Reset();
 
 public:
 
@@ -84,17 +57,50 @@ public:
 	int score;
 	int highscore;
 	int prevscore;
+	int MaxLives = 3;
 	int lives;
 	std::vector<Leader> leaderboard;
+
+	enum GameStates {
+		RESET, LOOP, GAMEOVER
+	};
+	GameStates gameState = RESET;
 
 	// Sensor at the bottom of the screen
 	PhysBody* sensor;
 	std::vector<PhysBody*> bodies_to_destroy;
 private:
-	UI ui;
+	UI* ui = NULL;
 	Flipper* leftFlipper = NULL;
 	Flipper* rightFlipper = NULL;
 	Spring* spring = NULL;
 	Obstacle* worldBoundary = NULL;
-	PhysBody* deathSensor;
+	PhysBody* deathSensor = NULL;
+};
+
+class UI {
+private:
+	Application* App = NULL;
+	ModuleRender* renderer = NULL;
+	ModuleGame* game = NULL;
+	enum colorKey {
+		DarkBlue, MidBlue, LightBlue,
+		DarkRed, MidRed, LightRed,
+		DarkGreen, MidGreen, LightGreen,
+		DarkOrange, Salmon, Yellow,
+		DarkBeige, MidLightBeige, MidBeige, LightBeige
+
+	};
+	const Color palette[16] = {CLITERAL(Color) { 36, 34, 84, 255 }, CLITERAL(Color) { 43, 45, 122, 255 }, CLITERAL(Color) { 66, 82, 164, 255 }, 
+								CLITERAL(Color) { 39, 22, 24, 255 }, CLITERAL(Color) { 77, 22, 58, 255 }, CLITERAL(Color) { 130, 32, 88, 255 }, 
+								CLITERAL(Color) { 21, 111, 75, 255 }, CLITERAL(Color) { 67, 168, 125, 255 }, CLITERAL(Color) { 132, 199, 179, 255 }, 
+								CLITERAL(Color) { 133, 74, 25, 255 }, CLITERAL(Color) { 200, 96, 78, 255 }, CLITERAL(Color) { 234, 174, 62, 255 }, 
+								CLITERAL(Color) { 132, 107, 70, 255 }, CLITERAL(Color) { 199, 169, 128, 255 }, CLITERAL(Color) { 234, 198, 152, 255 }, CLITERAL(Color) { 252, 246, 221, 255 } };
+public:
+	char GOname[4] = "\0";
+	int GOnameSize = 0;
+	void Start(Application* _app);
+	void DrawFadedRectangleRounded(Rectangle &rec, int fade, int startColorIndex, int endColorIndex);
+	void DrawFadedRectangle(Rectangle &rec, int fade, int startColorIndex, int endColorIndex);
+	void update();
 };
