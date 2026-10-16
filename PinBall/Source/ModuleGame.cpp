@@ -402,6 +402,9 @@ bool ModuleGame::Start()
 	LOG("Loading Intro assets");
 	bool ret = true;
 
+	//load saved leaderboard
+	loadLeaderboard();
+
 	App->renderer->camera.x = App->renderer->camera.y = 0;
 
 	circle = LoadTexture("Assets/wheel.png");
@@ -562,6 +565,7 @@ update_status ModuleGame::Update()
 			ui->GOnameSize = 0;
 
 			leaderboard.push_back(l);
+			saveLeaderboard();
 			Reset();
 		}
 		break;
@@ -763,6 +767,7 @@ void ModuleGame::saveLeaderboard() {
 
 void ModuleGame::loadLeaderboard() {
 	std::ifstream SaveFile(savefile, std::ios::binary);
+	if (!SaveFile) return;
 	std::string data;
 	while (getline(SaveFile, data)) {
 		Leader l;
