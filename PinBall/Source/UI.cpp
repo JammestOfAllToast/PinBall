@@ -4,6 +4,7 @@
 #include "ModuleGame.h"
 #include "ModuleAudio.h"
 #include "ModulePhysics.h"
+#include <string>
 
 void UI::Start(Application* _app) {
 	App = _app;
@@ -44,6 +45,14 @@ int GetMiddleWidth(Rectangle rec, int element /*element's width*/) {
 void UI::update() {//200, 190
 	//DrawText("Made By MC Physics", 1040, 15, 10, )
 	if (App == NULL) return;
+
+	for (int i = 0; i < game->leaderboard.size(); i++) {
+		std::string text;
+		text += game->leaderboard[i].name + std::string(" - ") + std::to_string(game->leaderboard[i].score);
+		renderer->DrawText(text.c_str(), 50, 100 + 10 * i, GetFontDefault(), 10, palette[MidRed]);
+	}
+	
+
 	if (game->gameState == ModuleGame::GAMEOVER) {
 		Rectangle gameOverMenu;
 		gameOverMenu.width = SCREEN_WIDTH / 3;
@@ -53,6 +62,7 @@ void UI::update() {//200, 190
 
 		DrawFadedRectangleRounded(gameOverMenu, 6, DarkBeige, LightBeige);
 		renderer->DrawText("Game Over!", GetMiddleWidth(gameOverMenu, 100), gameOverMenu.y + 20, GetFontDefault(), 10, palette[MidRed]);
+		renderer->DrawText("You like died and shit,\nuse yer keeboard to\nwrite yor name and\npress enter after type\nshit", GetMiddleWidth(gameOverMenu, 300), gameOverMenu.y + 40, GetFontDefault(), 2, palette[MidRed]);
 		renderer->DrawText(GOname, GetMiddleWidth(gameOverMenu, 100), gameOverMenu.y + 200, GetFontDefault(), 10, palette[DarkRed]);
 
 	}

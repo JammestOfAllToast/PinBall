@@ -521,6 +521,9 @@ update_status ModuleGame::Update()
 			for (int i = 0; i < ui->GOnameSize; i++) {
 				l.name[i] = ui->GOname[i];
 			}
+			ui->GOname[0] = '\0';
+			ui->GOnameSize = 0;
+
 			leaderboard.push_back(l);
 			Reset();
 		}
@@ -638,10 +641,55 @@ void ModuleGame::Loss() {
 	TraceLog(LOG_INFO, "BALL DOWN! LIVES: %d", lives);
 }
 
+
+int partition(std::vector<Leader>& vec, int low, int high) {
+
+	// Selecting the last element as the pivot
+	Leader pivot = vec[high];
+
+	// Index of the element smaller than the pivot
+	int i = low - 1;
+
+	for (int j = low; j < high; j++) {
+
+		// If the current element is smaller than
+		// or equal to the pivot
+		if (vec[j].score >= pivot.score) {
+			i++;
+			std::swap(vec[i], vec[j]);
+		}
+	}
+
+	// Place the pivot in its correct position
+	std::swap(vec[i + 1], vec[high]);
+
+	// Return the partition index
+	return i + 1;
+}
+
+void quickSort(std::vector<Leader>& vec, int low, int high) {
+
+	// Base case
+	if (low < high) {
+
+		// Partition the array
+		int pi = partition(vec, low, high);
+
+		// Sort elements before the pivot
+		quickSort(vec, low, pi - 1);
+
+		// Sort elements after the pivot
+		quickSort(vec, pi + 1, high);
+	}
+}
+
 void ModuleGame::Reset() {
 	gameState = RESET;
 	lives = MaxLives;
 	prevscore = score;
 	score = 0;
+
+	quickSort(leaderboard, 0, leaderboard.size() - 1);
+	
 	gameState = LOOP;
 }
