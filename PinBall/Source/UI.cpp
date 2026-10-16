@@ -57,7 +57,7 @@ void UI::update() {//200, 190
 	for (int i = 0; i < game->leaderboard.size(); i++) {
 		std::string text;
 		text += game->leaderboard[i].name + std::string(" - ") + std::to_string(game->leaderboard[i].score);
-		renderer->DrawText(text.c_str(), 50, 100 + 10 * i, body, 10, palette[MidRed]);
+		renderer->DrawText(text.c_str(), 50, 100 + 50 * i, body, 10, palette[MidRed]);
 	}
 	
 

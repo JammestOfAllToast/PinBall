@@ -6,7 +6,9 @@
 #include "ModulePhysics.h"
 
 #include <algorithm>
-#include <thread>
+#include <fstream>
+#include <string>
+#include <iostream>
 
 // Base class for everything in the scene that has a physics body
 class PhysicEntity
@@ -505,13 +507,17 @@ update_status ModuleGame::Update()
 
 	if (IsKeyPressed(KEY_FOUR))
 	{
-		entities.push_back(new Rick(App->physics, GetMouseX(), GetMouseY(), rick));
+		gameState = GAMEOVER;
 	}
-	if (IsKeyPressed(KEY_SPACE)) 
-								
+	if (IsKeyPressed(KEY_TAB))
 	{
-		NextBall();
+		saveLeaderboard();
 		
+	}
+	if (IsKeyPressed(KEY_CAPS_LOCK))
+	{
+		loadLeaderboard();
+
 	}
 	if (IsKeyPressed(KEY_DELETE))
 	{
@@ -740,4 +746,39 @@ void ModuleGame::NextBall() {
 	ball->body->body->SetAngularVelocity(0);
 	
 	ball->body->body->SetTransform(b2Vec2(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y) - 2), 0);
+}
+
+void ModuleGame::saveLeaderboard() {
+	std::ofstream SaveFile(savefile, std::ios::binary);
+	for (Leader l : leaderboard) {
+		SaveFile << l.name;
+
+		for (int i = sizeof(l.score) - 1; i >= 0; i--) {
+			SaveFile << (char)((l.score >> 8 * i) & 255);
+		}
+		SaveFile << '\n';
+	}
+	SaveFile.close();
+}
+
+void ModuleGame::loadLeaderboard() {
+	std::ifstream SaveFile(savefile, std::ios::binary);
+	std::string data;
+	while (getline(SaveFile, data)) {
+		Leader l;
+		char buffer[4];
+		for (int i = 0; i < data.length(); i++) {
+			std::cout << data[i] << " " << i << "\n";
+			if (i < 3) l.name[i] = data.c_str()[i];
+			else buffer[i-3] = data.c_str()[i];
+		}
+		l.score = 0;
+		for (int i = 0; i < 4; i++) {
+			l.score = l.score << 8;
+			l.score += (int)buffer[i] & 255;
+		}
+
+		leaderboard.push_back(l);
+	}
+	SaveFile.close();
 }

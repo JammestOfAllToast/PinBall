@@ -42,6 +42,9 @@ public:
 	void Reset();
 	void NextBall();
 
+	void saveLeaderboard();
+	void loadLeaderboard();
+
 public:
 
 	std::vector<PhysicEntity*> entities;
@@ -79,6 +82,8 @@ private:
 	Obstacle* worldBoundary = NULL;
 	PhysBody* deathSensor = NULL;
 	Ball* ball = NULL;
+
+	char* savefile = "save.bin";
 };
 
 class UI {
