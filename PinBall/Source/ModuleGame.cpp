@@ -6,6 +6,7 @@
 #include "ModulePhysics.h"
 
 #include <algorithm>
+#include <thread>
 
 // Base class for everything in the scene that has a physics body
 class PhysicEntity
@@ -351,7 +352,34 @@ public:
 	}
 };
 
+class Ball : public PhysicEntity
+{
+public:
+	Ball(ModulePhysics* physics, Texture2D _texture)
+		: PhysicEntity(physics->CreateCircle(100, 100, 25, 0, b2_dynamicBody))
+		, texture(_texture)
+	{
 
+	}
+
+	void Update() override
+	{
+		int x, y;
+		body->GetPosition(x, y);
+		body->body->SetBullet(true);
+		// Red when the mouse is inside the body
+		Color tint = WHITE;
+
+		// Box2D positions are the center of the body: draw the texture around its center
+		Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
+		Rectangle dest = { (float)x, (float)y, (float)texture.width, (float)texture.height };
+		Vector2 origin = { (float)texture.width / 2.0f, (float)texture.height / 2.0f };
+		if (body->body->IsAwake()) DrawTexturePro(texture, source, dest, origin, body->GetRotation() * RAD2DEG, tint);
+	}
+
+private:
+	Texture2D texture;
+};
 
 // -------- END OUR ENTITIES ------
 
@@ -406,6 +434,10 @@ bool ModuleGame::Start()
 	bumpers.push_back(new Bumper(App->physics, 100, 500, 50, circle));
 	bumpers.push_back(new Bumper(App->physics, 800, 500, 100, 100, 10));
 
+	ball = new Ball(App->physics, circle);
+	ball->body->listener = this;
+	entities.push_back(ball);
+
 	//Start UI
 	ui->Start(App);
 
@@ -458,7 +490,6 @@ update_status ModuleGame::Update()
 	if (IsKeyPressed(KEY_ONE))
 	{
 		Circle* c = new Circle(App->physics, GetMouseX(), GetMouseY(), circle);
-		c->body->listener = this;
 		entities.push_back(c);
 	}
 
@@ -476,10 +507,10 @@ update_status ModuleGame::Update()
 	{
 		entities.push_back(new Rick(App->physics, GetMouseX(), GetMouseY(), rick));
 	}
-	if (IsKeyPressed(KEY_SPACE)) // Edit this so that it's keyDown and needs timer to be 0 to start, make lots of IF statements cuz hardcode yippe, will fix later
-								// you still gonna do that or can we remove these? -Jam
+	if (IsKeyPressed(KEY_SPACE)) 
+								
 	{
-		TraceLog(LOG_INFO, "Activating spring...");
+		NextBall();
 		
 	}
 	if (IsKeyPressed(KEY_DELETE))
@@ -528,7 +559,9 @@ update_status ModuleGame::Update()
 			Reset();
 		}
 		break;
-
+	case DEFERLOSS:
+		Loss();
+		break;
 	default:
 		TraceLog(LOG_ERROR, "Game State Is Not Defined");
 		break;
@@ -591,7 +624,7 @@ void ModuleGame::OnCollision(PhysBody* bodyA, PhysBody* bodyB)
 	{
 		// Never destroy bodies inside a collision callback: the world is locked
 		// Keep them in a list and destroy them in Update()
-		if (bodyB != NULL && std::find(bodies_to_destroy.begin(), bodies_to_destroy.end(), bodyB) == bodies_to_destroy.end())
+		if (bodyB != NULL && std::find(bodies_to_destroy.begin(), bodies_to_destroy.end(), bodyB) == bodies_to_destroy.end() && bodyB != ball->body)
 			bodies_to_destroy.push_back(bodyB);
 		return;
 	}
@@ -600,7 +633,7 @@ void ModuleGame::OnCollision(PhysBody* bodyA, PhysBody* bodyB)
 		return;
 
 	if (bodyB == deathSensor) {
-		ModuleGame::Loss();
+		gameState = DEFERLOSS;
 		return;
 	}
 
@@ -634,10 +667,13 @@ void ModuleGame::DestroyAllEntities()
 }
 
 void ModuleGame::Loss() {
+	gameState = LOOP;
 	lives--;
 	if (lives <= 0) {
+		ball->body->body->SetAwake(false);
 		gameState = GAMEOVER;
-	}
+	} else NextBall();
+	
 	TraceLog(LOG_INFO, "BALL DOWN! LIVES: %d", lives);
 }
 
@@ -689,7 +725,19 @@ void ModuleGame::Reset() {
 	prevscore = score;
 	score = 0;
 
+	NextBall();
+
 	quickSort(leaderboard, 0, leaderboard.size() - 1);
 	
 	gameState = LOOP;
+}
+
+void ModuleGame::NextBall() {
+	ball->body->body->SetAwake(true);
+	int x, y;
+	spring->body->GetPosition(x, y);
+	ball->body->body->SetLinearVelocity(b2Vec2_zero);
+	ball->body->body->SetAngularVelocity(0);
+	
+	ball->body->body->SetTransform(b2Vec2(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y) - 2), 0);
 }

@@ -20,6 +20,7 @@ class Flipper;
 class Obstacle;
 class Spring;
 class Bumper;
+class Ball;
 class UI;
 
 class ModuleGame : public Module
@@ -39,6 +40,7 @@ public:
 
 	void Loss();
 	void Reset();
+	void NextBall();
 
 public:
 
@@ -62,7 +64,7 @@ public:
 	std::vector<Leader> leaderboard;
 
 	enum GameStates {
-		RESET, LOOP, GAMEOVER
+		RESET, LOOP, GAMEOVER, DEFERLOSS
 	};
 	GameStates gameState = RESET;
 
@@ -76,6 +78,7 @@ private:
 	Spring* spring = NULL;
 	Obstacle* worldBoundary = NULL;
 	PhysBody* deathSensor = NULL;
+	Ball* ball = NULL;
 };
 
 class UI {
@@ -83,6 +86,8 @@ private:
 	Application* App = NULL;
 	ModuleRender* renderer = NULL;
 	ModuleGame* game = NULL;
+	Font title;
+	Font body;
 	enum colorKey {
 		DarkBlue, MidBlue, LightBlue,
 		DarkRed, MidRed, LightRed,
@@ -99,6 +104,7 @@ private:
 public:
 	char GOname[4] = "\0";
 	int GOnameSize = 0;
+	~UI();
 	void Start(Application* _app);
 	void DrawFadedRectangleRounded(Rectangle &rec, int fade, int startColorIndex, int endColorIndex);
 	void DrawFadedRectangle(Rectangle &rec, int fade, int startColorIndex, int endColorIndex);

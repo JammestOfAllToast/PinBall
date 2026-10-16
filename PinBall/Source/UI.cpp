@@ -10,6 +10,8 @@ void UI::Start(Application* _app) {
 	App = _app;
 	game = _app->scene_intro;
 	renderer = _app->renderer;
+	title = LoadFontEx("Assets/HanaleiFill-Regular.ttf", 80, 0, 0);
+	body = LoadFontEx("Assets/HanaleiFill-Regular.ttf", 24, 0, 0);
 }
 
 void UI::DrawFadedRectangleRounded(Rectangle &rec, int fade, int startColorIndex, int endColorIndex) {
@@ -42,6 +44,12 @@ int GetMiddleWidth(Rectangle rec, int element /*element's width*/) {
 	return rec.x + (rec.width - element) / 2;
 }
 
+UI::~UI() {
+	UnloadFont(title);
+	UnloadFont(body);
+	
+}
+
 void UI::update() {//200, 190
 	//DrawText("Made By MC Physics", 1040, 15, 10, )
 	if (App == NULL) return;
@@ -49,7 +57,7 @@ void UI::update() {//200, 190
 	for (int i = 0; i < game->leaderboard.size(); i++) {
 		std::string text;
 		text += game->leaderboard[i].name + std::string(" - ") + std::to_string(game->leaderboard[i].score);
-		renderer->DrawText(text.c_str(), 50, 100 + 10 * i, GetFontDefault(), 10, palette[MidRed]);
+		renderer->DrawText(text.c_str(), 50, 100 + 10 * i, body, 10, palette[MidRed]);
 	}
 	
 
@@ -61,9 +69,11 @@ void UI::update() {//200, 190
 		gameOverMenu.y = (SCREEN_HEIGHT - gameOverMenu.height) / 2;
 
 		DrawFadedRectangleRounded(gameOverMenu, 6, DarkBeige, LightBeige);
-		renderer->DrawText("Game Over!", GetMiddleWidth(gameOverMenu, 100), gameOverMenu.y + 20, GetFontDefault(), 10, palette[MidRed]);
-		renderer->DrawText("You like died and shit,\nuse yer keeboard to\nwrite yor name and\npress enter after type\nshit", GetMiddleWidth(gameOverMenu, 300), gameOverMenu.y + 40, GetFontDefault(), 2, palette[MidRed]);
-		renderer->DrawText(GOname, GetMiddleWidth(gameOverMenu, 100), gameOverMenu.y + 200, GetFontDefault(), 10, palette[DarkRed]);
+		renderer->DrawText("Game Over!", GetMiddleWidth(gameOverMenu, 100), gameOverMenu.y + 20, title, 10, palette[MidRed]);
+		renderer->DrawText("You like died and shit,\nuse yer keeboard to\nwrite yor name and\npress enter after type\nshit", GetMiddleWidth(gameOverMenu, 300), gameOverMenu.y + 40, body, 2, palette[MidRed]);
+		renderer->DrawText(GOname, GetMiddleWidth(gameOverMenu, 100), gameOverMenu.y + 200, body, 10, palette[DarkRed]);
 
 	}
+
+	
 }
