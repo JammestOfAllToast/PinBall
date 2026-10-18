@@ -25,7 +25,7 @@ bool ModulePhysics::Start()
 	LOG("Creating Physics 2D environment");
 
 	// Assign the member variable (do NOT declare a local "b2World* world" here, it would shadow the member)
-	world = new b2World(b2Vec2(GRAVITY_X, -GRAVITY_Y));
+	world = new b2World(b2Vec2(App->gravity[0], -App->gravity[1]));
 
 	world->SetContactListener(this);
 
@@ -66,8 +66,8 @@ bool ModulePhysics::Start()
 
 update_status ModulePhysics::PreUpdate()
 {
-	world->Step(1.0f / 60.0f, 8, 3);
-
+	world->Step(App->framesPerSecond / 3600.0f, 8, 3);
+	if (world->GetGravity() != b2Vec2(App->gravity[0], App->gravity[1])) world->SetGravity(b2Vec2(App->gravity[0], App->gravity[1]));
 	return UPDATE_CONTINUE;
 }
 

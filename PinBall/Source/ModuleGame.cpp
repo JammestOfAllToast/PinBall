@@ -303,17 +303,20 @@ class Obstacle : public PhysicEntity // Remembver to set to kinematic pls we don
 									//no need, its a chain! - Jam
 {
 private:
-
+	Application* App;
 public:
-	Obstacle(ModulePhysics* physics, int _x, int _y, int* _points, int _size)
-		: PhysicEntity(physics->CreateChain(_x, _y, _points, _size, 0.75))
+	Obstacle(Application* _app, int _x, int _y, int* _points, int _size)
+		: PhysicEntity(_app->physics->CreateChain(_x, _y, _points, _size, _app->wallRestitution))
 	{
-
+		App = _app;
 	}
 
 	void Update() override
 	{
 		// No texture: press F1 to see it
+		if (body->body->GetFixtureList()[0].GetRestitution() != App->wallRestitution) body->body->GetFixtureList()[0].SetRestitution(App->wallRestitution);
+		TraceLog(LOG_INFO, "%d", App->wallRestitution);
+
 	}
 
 };
@@ -321,20 +324,23 @@ public:
 class Bumper : public PhysicEntity {
 private:
 	Texture2D texture;
+	Application* App;
 public:
 	int points;
 
-	Bumper(ModulePhysics* physics, int _x, int _y, int _points, Texture2D _texture)
-		: PhysicEntity(physics->CreateCircle(_x, _y, 25, 0.5, b2_kinematicBody))
+	Bumper(Application* _app, int _x, int _y, int _points, Texture2D _texture)
+		: PhysicEntity(_app->physics->CreateCircle(_x, _y, 25, 0.5, b2_kinematicBody))
 		, texture(_texture), points(_points)
 	{
+		App = _app;
 
 	}
 	//Overloaded so that sensors can now be crated the same way as normal bumpers!
-	Bumper(ModulePhysics* physics, int _x, int _y, int _half_width, int _half_height, int _points)
-		: PhysicEntity(physics->CreateRectangleSensor(_x, _y, _half_width, _half_height))
+	Bumper(Application* _app, int _x, int _y, int _half_width, int _half_height, int _points)
+		: PhysicEntity(_app->physics->CreateRectangleSensor(_x, _y, _half_width, _half_height))
 		, points(_points)
 	{
+		App = _app;
 
 	}
 
@@ -343,6 +349,7 @@ public:
 		int x, y;
 		body->GetPosition(x, y);
 		body->body->SetBullet(true);
+		if (body->body->GetFixtureList()[0].GetRestitution() != App->wallRestitution) body->body->GetFixtureList()[0].SetRestitution(App->wallRestitution);
 
 		Color tint = WHITE;
 
@@ -429,15 +436,19 @@ bool ModuleGame::Start()
 
 
 	int p[16] = {40, 40,  40, 600,  480, 600,  480, 700,  800, 700,  800, 600,  1240, 600,  1240, 40};
-	worldBoundary = new Obstacle(App->physics, 0, 0, p, 16);
-	//Note that world boundary is not within entities... I'll check if that's ok with rodrigo, but this is to avoid having it be deleted on backspace, furthermore, it does not need to have any checks so....
+	worldBoundary = new Obstacle(App, 0, 0, p, 16);
+	entities.push_back(worldBoundary);
 
 	spring = new Spring(App->physics, 750, 200, box);
 	entities.push_back(spring);
 
-	bumpers.push_back(new Bumper(App->physics, 50, 50, 50, circle));
-	bumpers.push_back(new Bumper(App->physics, 100, 500, 50, circle));
-	bumpers.push_back(new Bumper(App->physics, 800, 500, 100, 100, 10));
+	bumpers.push_back(new Bumper(App, 50, 50, 50, circle));
+	bumpers.push_back(new Bumper(App, 100, 500, 50, circle));
+	bumpers.push_back(new Bumper(App, 800, 500, 100, 100, 10));
+
+	for (int i = 0; i < bumpers.size(); i++) {
+		entities.push_back(bumpers[i]);
+	}
 
 	ball = new Ball(App->physics, circle);
 	ball->body->listener = this;
@@ -661,6 +672,7 @@ void ModuleGame::OnCollision(PhysBody* bodyA, PhysBody* bodyB)
 void ModuleGame::DestroyEntity(PhysicEntity* entity)
 {
 	entities.erase(std::find(entities.begin(), entities.end(), entity));
+	//bumpers.erase(std::find(bumpers.begin(), bumpers.end(), NULL));
 	App->physics->DestroyBody(entity->body);
 	delete entity;
 }

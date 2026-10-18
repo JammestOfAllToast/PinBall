@@ -69,7 +69,7 @@ void UI::DrawSlider(Rectangle rec, float min, float max, float& value, Color bg,
 	DrawRectangleRec(handleRec, handle);
 	std::string s = std::to_string(value);;
 	for (int i = 0; i < 5; i++) s.pop_back();
-	renderer->DrawText(s.c_str(), GetMiddleWidth(handleRec, handleSize - 10), GetMiddleHeight(handleRec, handleSize - 20), GetFontDefault(), 2, palette[LightBeige]);
+	renderer->DrawText(s.c_str(), GetMiddleWidth(handleRec, handleSize - 10), GetMiddleHeight(handleRec, handleSize - 10), GetFontDefault(), 2, palette[LightBeige]);
 	
 }
 
@@ -92,7 +92,7 @@ void UI::DrawSlider(Rectangle rec, float min, float max, int& value, Color bg, C
 	DrawRectangleRec(rec, bg);
 	DrawRectangleRec(handleRec, handle);
 	std::string s = std::to_string(value);
-	renderer->DrawText(s.c_str(), GetMiddleWidth(handleRec, handleSize - 10), GetMiddleHeight(handleRec, handleSize - 20), GetFontDefault(), 2, palette[LightBeige]);
+	renderer->DrawText(s.c_str(), GetMiddleWidth(handleRec, handleSize - 10), GetMiddleHeight(handleRec, handleSize - 10), GetFontDefault(), 2, palette[LightBeige]);
 }
 
 
@@ -116,7 +116,13 @@ void UI::update() {//200, 190
 	}
 	
 	//TODO FPS, GRAVITY, BALL RESTITUTION, LEVEL RESTITUTION, BUMPER RESTITUTION
-	DrawSlider(Rectangle{ 100, 600, 100, 20 }, 15.0, 30, gravity[0], palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ 100, 500, 100, 10 }, 0, 120, App->framesPerSecond, palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ 100, 525, 100, 10 }, -15, 15, App->gravity[0], palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ 100, 550, 100, 10 }, -15, 15, App->gravity[1], palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ 100, 575, 100, 10 }, 0, 1, App->ballRestitution, palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ 100, 600, 100, 10 }, 0, 1, App->wallRestitution, palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ 100, 625, 100, 10 }, 0, 1, App->bumperRestitution, palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ 100, 650, 100, 10 }, 0, 1, App->fliperRestitution, palette[MidBlue], palette[DarkBlue]);
 
 
 	if (game->gameState == ModuleGame::GAMEOVER) {
