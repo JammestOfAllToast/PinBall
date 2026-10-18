@@ -6,6 +6,14 @@
 #include "ModulePhysics.h"
 #include <string>
 
+int UI::GetMiddleWidth(Rectangle rec, int element /*element's width*/) {
+	return rec.x + (rec.width - element) / 2;
+}
+
+int UI::GetMiddleHeight(Rectangle rec, int element /*element's height*/) {
+	return rec.y + (rec.height - element) / 2;
+}
+
 void UI::Start(Application* _app) {
 	App = _app;
 	game = _app->scene_intro;
@@ -40,15 +48,62 @@ void UI::DrawFadedRectangle(Rectangle &rec, int fade, int startColorIndex, int e
 	}
 }
 
-int GetMiddleWidth(Rectangle rec, int element /*element's width*/) {
-	return rec.x + (rec.width - element) / 2;
+
+void UI::DrawSlider(Rectangle rec, float min, float max, float& value, Color bg, Color handle) {
+	float handleSize = 10 + rec.height;
+	float wheel = GetMouseWheelMove();
+	if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) || wheel) {
+		Vector2 mPos = GetMousePosition();
+		if (mPos.x >= rec.x - handleSize / 2 && mPos.x <= rec.x + rec.width + handleSize / 2 &&
+			mPos.y >= rec.y - handleSize / 2 && mPos.y <= rec.y + rec.height + handleSize / 2) {
+			float newVal;
+			if (wheel) newVal = value + 0.1 * (max - min) * wheel;
+			else newVal = (mPos.x - rec.x) / (rec.width) * (max - min) + min;
+			if (newVal < min) newVal = min;
+			if (newVal > max) newVal = max;
+			value = newVal;
+		}
+	}
+	Rectangle handleRec = { rec.x + (value - min) / (max - min) * rec.width - handleSize / 2, rec.y - 5, handleSize, handleSize };
+	DrawRectangleRec(rec, bg);
+	DrawRectangleRec(handleRec, handle);
+	std::string s = std::to_string(value);;
+	for (int i = 0; i < 5; i++) s.pop_back();
+	renderer->DrawText(s.c_str(), GetMiddleWidth(handleRec, handleSize - 10), GetMiddleHeight(handleRec, handleSize - 20), GetFontDefault(), 2, palette[LightBeige]);
+	
 }
+
+void UI::DrawSlider(Rectangle rec, float min, float max, int& value, Color bg, Color handle) {
+	float handleSize = 10 + rec.height;
+	float wheel = GetMouseWheelMove();
+	if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) || wheel) {
+		Vector2 mPos = GetMousePosition();
+		if (mPos.x >= rec.x - handleSize / 2 && mPos.x <= rec.x+ rec.width + handleSize / 2 &&
+			mPos.y >= rec.y - handleSize / 2 && mPos.y <= rec.y + rec.height + handleSize / 2) {
+			int newVal;
+			if (wheel) newVal = value + 0.1*(max - min) * wheel;
+			else newVal = (mPos.x - rec.x) / (rec.width) * (max - min) + min;
+			if (newVal < min) newVal = min;
+			if (newVal > max) newVal = max;
+			value = newVal;
+		}
+	}
+	Rectangle handleRec = { rec.x + (value - min) / (max - min) * rec.width - handleSize / 2, rec.y - 5, handleSize, handleSize };
+	DrawRectangleRec(rec, bg);
+	DrawRectangleRec(handleRec, handle);
+	std::string s = std::to_string(value);
+	renderer->DrawText(s.c_str(), GetMiddleWidth(handleRec, handleSize - 10), GetMiddleHeight(handleRec, handleSize - 20), GetFontDefault(), 2, palette[LightBeige]);
+}
+
+
 
 UI::~UI() {
 	UnloadFont(title);
 	UnloadFont(body);
 	
 }
+
+
 
 void UI::update() {//200, 190
 	//DrawText("Made By MC Physics", 1040, 15, 10, )
@@ -60,6 +115,9 @@ void UI::update() {//200, 190
 		renderer->DrawText(text.c_str(), 50, 100 + 50 * i, body, 10, palette[MidRed]);
 	}
 	
+	//TODO FPS, GRAVITY, BALL RESTITUTION, LEVEL RESTITUTION, BUMPER RESTITUTION
+	DrawSlider(Rectangle{ 100, 600, 100, 20 }, 15.0, 30, gravity[0], palette[MidBlue], palette[DarkBlue]);
+
 
 	if (game->gameState == ModuleGame::GAMEOVER) {
 		Rectangle gameOverMenu;

@@ -113,5 +113,9 @@ public:
 	void Start(Application* _app);
 	void DrawFadedRectangleRounded(Rectangle &rec, int fade, int startColorIndex, int endColorIndex);
 	void DrawFadedRectangle(Rectangle &rec, int fade, int startColorIndex, int endColorIndex);
+	void DrawSlider(Rectangle Rec, float min, float max, float& value, Color bg, Color handle);
+	void DrawSlider(Rectangle Rec, float min, float max, int& value, Color bg, Color handle);
 	void update();
+	int GetMiddleWidth(Rectangle rec, int element);
+	int GetMiddleHeight(Rectangle rec, int element);
 };

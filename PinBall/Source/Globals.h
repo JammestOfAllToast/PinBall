@@ -39,3 +39,12 @@ enum update_status
 #define WIN_FULLSCREEN_DESKTOP false
 #define VSYNC				true
 #define TITLE "Physics 2D Playground"
+
+// Game Configs
+
+static int framesPerSecond = 60;
+static float gravity[2] = { 0.0, 30.0 };
+static float ballRestitution = 0.2f;
+static float wallRestitution = 0.2f;
+static float bumperRestitution = 0.0f;
+static float fliperRestitution = 1.0f;
