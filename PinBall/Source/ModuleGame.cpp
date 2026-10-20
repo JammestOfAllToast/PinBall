@@ -785,7 +785,10 @@ void ModuleGame::NextBall() {
 void ModuleGame::saveLeaderboard() {
 	std::ofstream SaveFile(savefile, std::ios::binary);
 	for (Leader l : leaderboard) {
-		SaveFile << l.name;
+		for (int i = 0; i < 3; i++) {
+			if (l.name[i] == 0) l.name[i] = '\0';
+			SaveFile << l.name[i];
+		}
 
 		for (int i = sizeof(l.score) - 1; i >= 0; i--) {
 			SaveFile << (char)((l.score >> 8 * i) & 255);
