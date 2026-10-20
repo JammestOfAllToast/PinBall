@@ -116,6 +116,15 @@ void UI::Start(Application* _app) {
 	SlidersBackground.height = 300 - 14 - 10;
 	SlidersBackground.x = 40 + 7 + 5;
 	SlidersBackground.y = 40 + 7 + 5 + 340;
+
+	/*float FramesPS = static_cast<float>(App->framesPerSecond);
+	SliderValue[0] = &FramesPS;
+	SliderValue[1] = &App->gravity[0];
+	SliderValue[2] = &App->gravity[1];
+	SliderValue[3] = &App->ballRestitution;
+	SliderValue[4] = &App->wallRestitution;
+	SliderValue[5] = &App->bumperRestitution;
+	SliderValue[6] = &App->fliperRestitution;*/
 }
 
 void UI::DrawBackground()
@@ -235,6 +244,12 @@ void UI::DrawSlider(Rectangle rec, float min, float max, int& value, Color bg, C
 	renderer->DrawText(s.c_str(), GetMiddleWidth(handleRec, handleSize - 10), GetMiddleHeight(handleRec, handleSize - 10), GetFontDefault(), 2, palette[LightBeige]);
 }
 
+/*void UI::RenderSlider(float x, float InitialY, int newLineSeparation, float SlidersWidth, float SlidersHeight, float min, float max, float* value, Color bg, Color handle) {
+	for (int i = 0; i < sizeof(SliderValue) / sizeof(SliderValue[0]); i++)
+	{
+		DrawSlider(Rectangle{ x, InitialY + i * newLineSeparation, SlidersWidth, SlidersHeight }, min, max, *value, bg, handle);
+	}
+};*/
 
 
 UI::~UI() {
@@ -275,14 +290,18 @@ void UI::update() {//200, 190
 		renderer->DrawText(LeaderBoardScores, 40  + GetMiddleWidth(LeaderboardBackground, MeasureText(LeaderBoardScores, 27)), 110 + 80 * i, body, 2, palette[LightRed]);
 	}
 	
+	//Sliders
 	//TODO FPS, GRAVITY, BALL RESTITUTION, LEVEL RESTITUTION, BUMPER RESTITUTION
-	DrawSlider(Rectangle{ 100, 500, 100, 10 }, 0, 120, App->framesPerSecond, palette[MidBlue], palette[DarkBlue]);
-	DrawSlider(Rectangle{ 100, 525, 100, 10 }, -15, 15, App->gravity[0], palette[MidBlue], palette[DarkBlue]);
-	DrawSlider(Rectangle{ 100, 550, 100, 10 }, -15, 15, App->gravity[1], palette[MidBlue], palette[DarkBlue]);
-	DrawSlider(Rectangle{ 100, 575, 100, 10 }, 0, 1, App->ballRestitution, palette[MidBlue], palette[DarkBlue]);
-	DrawSlider(Rectangle{ 100, 600, 100, 10 }, 0, 1, App->wallRestitution, palette[MidBlue], palette[DarkBlue]);
-	DrawSlider(Rectangle{ 100, 625, 100, 10 }, 0, 1, App->bumperRestitution, palette[MidBlue], palette[DarkBlue]);
-	DrawSlider(Rectangle{ 100, 650, 100, 10 }, 0, 1, App->fliperRestitution, palette[MidBlue], palette[DarkBlue]);
+	float SliderX = GetMiddleWidth(SlidersBackground, 100);
+	float spacingY = 32.5;
+	float SliderY = GetMiddleHeight(SlidersBackground, 70 + spacingY*7) + 27.5;
+	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 1, 100, 10 }, 0, 120, App->framesPerSecond, palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 2, 100, 10 }, -15, 15, App->gravity[0], palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 3, 100, 10 }, -15, 15, App->gravity[1], palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 4, 100, 10 }, 0, 1, App->ballRestitution, palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 5, 100, 10 }, 0, 1, App->wallRestitution, palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 6, 100, 10 }, 0, 1, App->bumperRestitution, palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 7, 100, 10 }, 0, 1, App->fliperRestitution, palette[MidBlue], palette[DarkBlue]);
 
 
 	//GameOver
