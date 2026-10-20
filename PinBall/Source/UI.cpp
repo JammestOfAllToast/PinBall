@@ -125,6 +125,7 @@ void UI::update() {//200, 190
 	DrawSlider(Rectangle{ 100, 650, 100, 10 }, 0, 1, App->fliperRestitution, palette[MidBlue], palette[DarkBlue]);
 
 
+
 	if (game->gameState == ModuleGame::GAMEOVER) {
 		Rectangle gameOverMenu;
 		gameOverMenu.width = SCREEN_WIDTH / 3;

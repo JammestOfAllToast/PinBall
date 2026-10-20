@@ -182,6 +182,7 @@ private:
 
 class Flipper : public PhysicEntity {
 private:
+	Application* App;
 	bool side;
 	const bool left = 0;
 	const bool right = 1;
@@ -193,23 +194,25 @@ private:
 	b2RevoluteJoint* joint;
 	Texture2D texture;
 public:
-	Flipper(ModulePhysics* physics, int _x, int _y, bool _side, Texture2D _texture)
-		: PhysicEntity(physics->CreateRectangle(_x, _y, 50, 26))
+	Flipper(Application* _app, int _x, int _y, bool _side, Texture2D _texture)
+		: PhysicEntity(_app->physics->CreateRectangle(_x, _y, 50, 26))
 		, texture(_texture), side(_side)
 	{
 		body->body->SetGravityScale(0.0);
 		b2RevoluteJointDef revolute;
-		if (side) revolute.Initialize(physics->ground, body->body, b2Vec2(0.8, 0) + body->body->GetWorldCenter());
-		else revolute.Initialize(physics->ground, body->body, b2Vec2(-0.8, 0) + body->body->GetWorldCenter());
+		if (side) revolute.Initialize(_app->physics->ground, body->body, b2Vec2(0.8, 0) + body->body->GetWorldCenter());
+		else revolute.Initialize(_app->physics->ground, body->body, b2Vec2(-0.8, 0) + body->body->GetWorldCenter());
 		revolute.enableMotor = true;
 		revolute.maxMotorTorque = 100000.0f;
 		//revolute.lowerAngle = side == left ? 0.25 : -0.25f * b2_pi;
 		//revolute.enableLimit = true; 
-		joint = (b2RevoluteJoint*)physics->world->CreateJoint(&revolute);
+		joint = (b2RevoluteJoint*)_app->physics->world->CreateJoint(&revolute);
 
 	}
 
 	void Update() override {
+		if (App != NULL && body->body->GetFixtureList()[0].GetRestitution() != App->fliperRestitution) body->body->GetFixtureList()[0].SetRestitution(App->fliperRestitution);
+
 		int x, y;
 		body->GetPosition(x, y);
 		joint->SetMotorSpeed(0);
@@ -314,9 +317,7 @@ public:
 	void Update() override
 	{
 		// No texture: press F1 to see it
-		if (body->body->GetFixtureList()[0].GetRestitution() != App->wallRestitution) body->body->GetFixtureList()[0].SetRestitution(App->wallRestitution);
-		TraceLog(LOG_INFO, "%d", App->wallRestitution);
-
+		if (App != NULL && body->body->GetFixtureList()[0].GetRestitution() != App->wallRestitution) body->body->GetFixtureList()[0].SetRestitution(App->wallRestitution);
 	}
 
 };
@@ -349,7 +350,7 @@ public:
 		int x, y;
 		body->GetPosition(x, y);
 		body->body->SetBullet(true);
-		if (body->body->GetFixtureList()[0].GetRestitution() != App->wallRestitution) body->body->GetFixtureList()[0].SetRestitution(App->wallRestitution);
+		if (App != NULL && body->body->GetFixtureList()[0].GetRestitution() != App->bumperRestitution) body->body->GetFixtureList()[0].SetRestitution(App->bumperRestitution);
 
 		Color tint = WHITE;
 
@@ -364,15 +365,18 @@ public:
 class Ball : public PhysicEntity
 {
 public:
-	Ball(ModulePhysics* physics, Texture2D _texture)
-		: PhysicEntity(physics->CreateCircle(100, 100, 25, 0, b2_dynamicBody))
+	Ball(Application* _app, Texture2D _texture)
+		: PhysicEntity(_app->physics->CreateCircle(100, 100, 25, 0, b2_dynamicBody))
 		, texture(_texture)
 	{
-
+		App = _app;
 	}
 
 	void Update() override
 	{
+		if (App != NULL && body->body->GetFixtureList()[0].GetRestitution() != App->ballRestitution) body->body->GetFixtureList()[0].SetRestitution(App->ballRestitution);
+
+
 		int x, y;
 		body->GetPosition(x, y);
 		body->body->SetBullet(true);
@@ -387,6 +391,7 @@ public:
 	}
 
 private:
+	Application* App = NULL;
 	Texture2D texture;
 };
 
@@ -428,10 +433,10 @@ bool ModuleGame::Start()
 	deathSensor = App->physics->CreateRectangleSensor(SCREEN_WIDTH / 2, SCREEN_HEIGHT, SCREEN_WIDTH / 2, 40);
 
 	// Temp until we understand how scenes are implemented here
-	leftFlipper = new Flipper(App->physics, 500, 300, false, box);
+	leftFlipper = new Flipper(App, 500, 300, false, box);
 	entities.push_back(leftFlipper);
 
-	rightFlipper = new Flipper(App->physics, 620, 300, true, box);
+	rightFlipper = new Flipper(App, 620, 300, true, box);
 	entities.push_back(rightFlipper);
 
 
@@ -450,7 +455,7 @@ bool ModuleGame::Start()
 		entities.push_back(bumpers[i]);
 	}
 
-	ball = new Ball(App->physics, circle);
+	ball = new Ball(App, circle);
 	ball->body->listener = this;
 	entities.push_back(ball);
 

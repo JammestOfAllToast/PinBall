@@ -47,10 +47,10 @@ public:
 
 	int framesPerSecond = 60;
 	float gravity[2] = { 0.0, 7.0 };
-	float ballRestitution = 0.2f;
-	float wallRestitution = 0.2f;
-	float bumperRestitution = 0.0f;
-	float fliperRestitution = 1.0f;
+	float ballRestitution = 0.8f;
+	float wallRestitution = 0.8f;
+	float bumperRestitution = 1.0f;
+	float fliperRestitution = 0.0f;
 
 private:
 
