@@ -4,6 +4,7 @@
 #include "ModuleGame.h"
 #include "ModuleAudio.h"
 #include "ModulePhysics.h"
+#include "UI.h"
 
 #include <algorithm>
 #include <fstream>
@@ -471,6 +472,9 @@ bool ModuleGame::CleanUp()
 // Update: draw background
 update_status ModuleGame::Update()
 {
+	if (ui != NULL) {
+		ui->DrawBackground();
+	}
 	// Destroy the bodies that touched the sensor
 	for (PhysBody* body : bodies_to_destroy)
 	{

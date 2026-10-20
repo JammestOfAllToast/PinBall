@@ -3,6 +3,7 @@
 #include "Globals.h"
 #include "Module.h"
 
+
 #include "p2Point.h"
 
 #include "raylib.h"
@@ -84,34 +85,4 @@ private:
 	Ball* ball = NULL;
 
 	char* savefile = "save.bin";
-};
-
-class UI {
-private:
-	Application* App = NULL;
-	ModuleRender* renderer = NULL;
-	ModuleGame* game = NULL;
-	Font title;
-	Font body;
-	enum colorKey {
-		DarkBlue, MidBlue, LightBlue,
-		DarkRed, MidRed, LightRed,
-		DarkGreen, MidGreen, LightGreen,
-		DarkOrange, Salmon, Yellow,
-		DarkBeige, MidLightBeige, MidBeige, LightBeige
-
-	};
-	const Color palette[16] = {CLITERAL(Color) { 36, 34, 84, 255 }, CLITERAL(Color) { 43, 45, 122, 255 }, CLITERAL(Color) { 66, 82, 164, 255 }, 
-								CLITERAL(Color) { 39, 22, 24, 255 }, CLITERAL(Color) { 77, 22, 58, 255 }, CLITERAL(Color) { 130, 32, 88, 255 }, 
-								CLITERAL(Color) { 21, 111, 75, 255 }, CLITERAL(Color) { 67, 168, 125, 255 }, CLITERAL(Color) { 132, 199, 179, 255 }, 
-								CLITERAL(Color) { 133, 74, 25, 255 }, CLITERAL(Color) { 200, 96, 78, 255 }, CLITERAL(Color) { 234, 174, 62, 255 }, 
-								CLITERAL(Color) { 132, 107, 70, 255 }, CLITERAL(Color) { 199, 169, 128, 255 }, CLITERAL(Color) { 234, 198, 152, 255 }, CLITERAL(Color) { 252, 246, 221, 255 } };
-public:
-	char GOname[4] = "\0";
-	int GOnameSize = 0;
-	~UI();
-	void Start(Application* _app);
-	void DrawFadedRectangleRounded(Rectangle &rec, int fade, int startColorIndex, int endColorIndex);
-	void DrawFadedRectangle(Rectangle &rec, int fade, int startColorIndex, int endColorIndex);
-	void update();
 };
