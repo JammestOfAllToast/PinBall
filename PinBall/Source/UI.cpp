@@ -255,7 +255,9 @@ void UI::update() {//200, 190
 	const char* CurrentScore = TextFormat("%d", game->score);
 	const char* PreviousScore = TextFormat("%d", game->prevscore);
 
-	renderer->DrawText(BallCounter, 1062+68, 272 + 38, body, 2, palette[LightRed]);
+	renderer->DrawText(BallCounter, GetMiddleWidth(BallCounterBackground, MeasureText(BallCounter, 27)), 272 + 38, body, 2, palette[LightRed]);
+	renderer->DrawText(CurrentScore, GetMiddleWidth(CurrentScoreBackground, MeasureText(CurrentScore, 27)), 272 + 38 + 146, body, 2, palette[LightRed]);
+	renderer->DrawText(PreviousScore, GetMiddleWidth(PreviousScoreBackground, MeasureText(PreviousScore, 27)), 272 + 38 + 146*2, body, 2, palette[LightRed]);
 
 	//Leaderboard
 	int maxScores;
@@ -263,8 +265,14 @@ void UI::update() {//200, 190
 	if (maxScores > 3) maxScores = 3;
 	for (int i = 0; i < maxScores; i++) {
 		std::string text;
-		text += game->leaderboard[i].name + std::string(" - ") + std::to_string(game->leaderboard[i].score);
+		text += game->leaderboard[i].name;
 		renderer->DrawText(text.c_str(), 60, 110 + 80 * i, body, 2, palette[LightRed]);
+		const char* longestName = "WWW";
+		const char* hyphen = "-";
+		renderer->DrawText(hyphen, 60 + MeasureText(longestName, 27), 110 + 80 * i, body, 2, palette[LightRed]);
+		const char* LeaderBoardScores;
+		LeaderBoardScores = TextFormat("%d", (game->leaderboard[i].score));
+		renderer->DrawText(LeaderBoardScores, 40  + GetMiddleWidth(LeaderboardBackground, MeasureText(LeaderBoardScores, 27)), 110 + 80 * i, body, 2, palette[LightRed]);
 	}
 	
 	//TODO FPS, GRAVITY, BALL RESTITUTION, LEVEL RESTITUTION, BUMPER RESTITUTION
@@ -277,7 +285,7 @@ void UI::update() {//200, 190
 	DrawSlider(Rectangle{ 100, 650, 100, 10 }, 0, 1, App->fliperRestitution, palette[MidBlue], palette[DarkBlue]);
 
 
-
+	//GameOver
 	if (game->gameState == ModuleGame::GAMEOVER) {
 
 		DrawFadedRectangleRounded(gameOverMenu, 7, DarkBeige, LightBeige);
