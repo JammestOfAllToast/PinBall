@@ -72,4 +72,8 @@ public:
 	void DrawFadedRectangle(Rectangle rec, int fade, int startColorIndex, int endColorIndex);
 	void DrawBackground();
 	void update();
+	void DrawSlider(Rectangle rec, float min, float max, float& value, Color bg, Color handle);
+	void DrawSlider(Rectangle rec, float min, float max, int& value, Color bg, Color handle);
+	int GetMiddleWidth(Rectangle rec, int element /*element's width*/);
+	int GetMiddleHeight(Rectangle rec, int element /*element's height*/);
 };
