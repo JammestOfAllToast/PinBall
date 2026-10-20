@@ -276,17 +276,26 @@ public:
 		if (ret && y-initial_y < max_y ) {
 			//retract
 			body->body->SetLinearVelocity(b2Vec2(0, 5));
+			body->body->SetType(b2_kinematicBody);
 		}
 		else if (ret) {
 			//max y reached
 			body->body->SetLinearVelocity(b2Vec2(0, 0));
+			body->body->SetType(b2_kinematicBody);
 		}
-		else if (y <= initial_y - 0.5 || y >= initial_y + 0.5){
+		else if (body->body->GetType() == b2_dynamicBody || y <= initial_y - 0.125 || y >= initial_y + 0.125) {
 			//hooke's law:
-			body->body->ApplyForceToCenter(b2Vec2(0, -k* (y - initial_y) - body->body->GetLinearVelocity().y * k ), true);
+			b2Vec2 force = {0, -k * (y - initial_y) - body->body->GetLinearVelocity().y * k };
+			if (abs(force.y) < 0.5) {
+				force.y = 0;
+				body->body->SetType(b2_kinematicBody);
+			} else body->body->SetType(b2_dynamicBody);
+
+			body->body->ApplyForceToCenter(force, true);
 		}
 		else {
 			//Clamping
+			body->body->SetType(b2_kinematicBody);
 			body->body->SetLinearVelocity(b2Vec2(0, 0));
 		}
 
@@ -387,7 +396,7 @@ public:
 		Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
 		Rectangle dest = { (float)x, (float)y, (float)texture.width, (float)texture.height };
 		Vector2 origin = { (float)texture.width / 2.0f, (float)texture.height / 2.0f };
-		if (body->body->IsAwake()) DrawTexturePro(texture, source, dest, origin, body->GetRotation() * RAD2DEG, tint);
+		if (App->scene_intro->gameState != ModuleGame::GAMEOVER) DrawTexturePro(texture, source, dest, origin, body->GetRotation() * RAD2DEG, tint);
 	}
 
 private:
