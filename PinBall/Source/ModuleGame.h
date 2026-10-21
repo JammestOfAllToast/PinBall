@@ -56,6 +56,12 @@ public:
 	Texture2D rick;
 
 	uint32 bonus_fx;
+	uint32 spring_ret_fx;
+	uint32 spring_rel_fx;
+	uint32 fall_fx;
+	uint32 enter_fx;
+	uint32 bump_fx;
+	uint32 flip_fx;
 
 	vec2<int> ray;
 	bool ray_on;

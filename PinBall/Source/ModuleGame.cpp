@@ -191,6 +191,7 @@ private:
 	const float speed = 7.5f * b2_pi;
 	const float limit = 0.25;
 	bool flip;
+	bool wasFlip;
 
 	b2RevoluteJoint* joint;
 	Texture2D texture;
@@ -199,6 +200,7 @@ public:
 		: PhysicEntity(_app->physics->CreateRectangle(_x, _y, 50, 26))
 		, texture(_texture), side(_side)
 	{
+		App = _app;
 		body->body->SetGravityScale(0.0);
 		b2RevoluteJointDef revolute;
 		if (side) revolute.Initialize(_app->physics->ground, body->body, b2Vec2(0.8, 0) + body->body->GetWorldCenter());
@@ -217,8 +219,9 @@ public:
 		int x, y;
 		body->GetPosition(x, y);
 		joint->SetMotorSpeed(0);
-
+		if (App != NULL && wasFlip != flip) App->audio->PlayFx(App->scene_intro->flip_fx);
 		if (flip) {
+			
 			if (side == left) {
 				if (joint->GetJointAngle() >= -limit * b2_pi) joint->SetMotorSpeed(-speed);
 				
@@ -244,6 +247,7 @@ public:
 		Rectangle dest = { (float)x, (float)y, (float)texture.width, (float)texture.height };
 		Vector2 origin = { (float)texture.width / 2.0f, (float)texture.height / 2.0f };
 		DrawTexturePro(texture, source, dest, origin, body->GetRotation() * RAD2DEG, tint);
+		wasFlip = flip;
 	}
 
 	void SetFlip(bool _flip) {
@@ -254,37 +258,44 @@ public:
 
 class Spring : public PhysicEntity { // Spring Class goes here -Mr. D
 private:
+	Application* App;
 	b2PrismaticJoint* joint;
 	Texture2D texture;
 	float k = 5;
 	bool ret;
+	bool wasRet;
 	int initial_y;
 	int max_y = 300;
 
 public:
-	Spring(ModulePhysics* physics, int _x, int _y, Texture2D _texture) : PhysicEntity(physics->CreateRectangle(_x, _y, 20, 20)), texture(_texture) {
+	Spring(Application* _app, int _x, int _y, Texture2D _texture) : PhysicEntity(_app->physics->CreateRectangle(_x, _y, 20, 20)), texture(_texture) {
+		App = _app;
 		body->body->SetGravityScale(0.0);
 		initial_y = _y;
 		body->body->SetFixedRotation(true);
 		b2PrismaticJointDef prism;
-		prism.Initialize(physics->ground, body->body, b2Vec2(0, 0), b2Vec2(0, 1));
-		joint = (b2PrismaticJoint*)physics->world->CreateJoint(&prism);
+		prism.Initialize(App->physics->ground, body->body, b2Vec2(0, 0), b2Vec2(0, 1));
+		joint = (b2PrismaticJoint*)App->physics->world->CreateJoint(&prism);
 	}
 	void Update() override {
-		// AAAAAAAAAAA -Mr.D
 		int x, y;
 		body->GetPosition(x, y);
 		if (ret && y-initial_y < max_y ) {
 			//retract
 			body->body->SetLinearVelocity(b2Vec2(0, 5));
 			body->body->SetType(b2_kinematicBody);
+			if (!IsSoundPlaying(App->audio->fx[App->scene_intro->spring_ret_fx])) App->audio->PlayFx(App->scene_intro->spring_ret_fx);
 		}
 		else if (ret) {
 			//max y reached
 			body->body->SetLinearVelocity(b2Vec2(0, 0));
 			body->body->SetType(b2_kinematicBody);
+			
+			
+
 		}
 		else if (body->body->GetType() == b2_dynamicBody || y <= initial_y - 0.125 || y >= initial_y + 0.125) {
+			if (wasRet != ret) App->audio->PlayFx(App->scene_intro->spring_rel_fx);
 			//hooke's law:
 			b2Vec2 force = {0, -k * (y - initial_y) - body->body->GetLinearVelocity().y * k };
 			if (abs(force.y) < 0.5) {
@@ -299,7 +310,7 @@ public:
 			body->body->SetType(b2_kinematicBody);
 			body->body->SetLinearVelocity(b2Vec2(0, 0));
 		}
-
+		wasRet = ret;
 		Color tint = WHITE;
 
 		Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
@@ -411,7 +422,6 @@ ModuleGame::ModuleGame(Application* app, bool start_enabled) : Module(app, start
 {
 	ray_on = false;
 	ray.x = ray.y = 0;
-	sensor = NULL;
 	ui = new UI();
 }
 
@@ -434,10 +444,12 @@ bool ModuleGame::Start()
 	rick = LoadTexture("Assets/rick_head.png");
 
 	bonus_fx = App->audio->LoadFx("Assets/bonus.wav");
-
-	// Sensor at the bottom of the screen
-	sensor = App->physics->CreateRectangleSensor(SCREEN_WIDTH / 2, SCREEN_HEIGHT, SCREEN_WIDTH / 2, 25);
-	sensor->listener = this;
+	spring_ret_fx = App->audio->LoadFx("Assets/snd_chain_extend.wav");
+	spring_rel_fx = App->audio->LoadFx("Assets/snd_heavyswing.wav");
+	fall_fx = App->audio->LoadFx("Assets/snd_closet_impact.wav");
+	enter_fx = App->audio->LoadFx("Assets/snd_select.wav");
+	bump_fx = App->audio->LoadFx("Assets/snd_metalhit_bc.wav");
+	flip_fx = App->audio->LoadFx("Assets/snd_dooropen.wav");
 
 	//Death Sensor
 	deathSensor = App->physics->CreateRectangleSensor(SCREEN_WIDTH / 2, SCREEN_HEIGHT, SCREEN_WIDTH / 2, 40);
@@ -454,7 +466,7 @@ bool ModuleGame::Start()
 	worldBoundary = new Obstacle(App, 0, 0, p, 16);
 	entities.push_back(worldBoundary);
 
-	spring = new Spring(App->physics, 750, 200, box);
+	spring = new Spring(App, 750, 200, box);
 	entities.push_back(spring);
 
 	bumpers.push_back(new Bumper(App, 50, 50, 50, circle));
@@ -484,8 +496,8 @@ bool ModuleGame::CleanUp()
 
 	DestroyAllEntities();
 
-	App->physics->DestroyBody(sensor);
-	sensor = NULL;
+	//App->physics->DestroyBody(sensor);
+	//sensor = NULL;
 
 	UnloadTexture(circle);
 	UnloadTexture(box);
@@ -658,33 +670,22 @@ update_status ModuleGame::Update()
 // Circles play bonus_fx when they collide
 void ModuleGame::OnCollision(PhysBody* bodyA, PhysBody* bodyB)
 {
-	// Bodies that touch the sensor are destroyed
-	if (bodyA == sensor)
-	{
-		// Never destroy bodies inside a collision callback: the world is locked
-		// Keep them in a list and destroy them in Update()
-		if (bodyB != NULL && std::find(bodies_to_destroy.begin(), bodies_to_destroy.end(), bodyB) == bodies_to_destroy.end() && bodyB != ball->body)
-			bodies_to_destroy.push_back(bodyB);
-		return;
-	}
-
-	if (bodyB == sensor)
-		return;
-
 	if (bodyB == deathSensor) {
+		App->audio->PlayFx(fall_fx);
 		gameState = DEFERLOSS;
 		return;
 	}
 
 	for (Bumper* bumper : bumpers) {
 		if (bodyB == bumper->body) {
+			App->audio->PlayFx(bump_fx);
 			score += bumper->points;
 			TraceLog(LOG_INFO, "BALL HIT MUMPER!: SCORE: %d", score);
 			return;
 		}
 	}
 
-	App->audio->PlayFx(bonus_fx);
+	//App->audio->PlayFx(bonus_fx);
 }
 
 void ModuleGame::DestroyEntity(PhysicEntity* entity)

@@ -23,10 +23,11 @@ public:
 
 	// Play a previously loaded sound
 	bool PlayFx(unsigned int fx, int repeat = 0);
+	Sound fx[MAX_SOUNDS];
 
 private:
 
 	Music music;
-	Sound fx[MAX_SOUNDS];
+	
     unsigned int fx_count;
 };
