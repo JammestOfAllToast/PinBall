@@ -14,6 +14,7 @@ private:
 	Font title;
 	Font body;
 	Font credits;
+	Font sliders;
 	enum colorKey {
 		DarkBlue, MidBlue, LightBlue,
 		DarkRed, MidRed, LightRed,

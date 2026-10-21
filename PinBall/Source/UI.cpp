@@ -23,6 +23,7 @@ void UI::Start(Application* _app) {
 	title = LoadFontEx("Assets/HanaleiFill-Regular.ttf", 80, 0, 0);
 	body = LoadFontEx("Assets/HanaleiFill-Regular.ttf", 27, 0, 0);
 	credits = LoadFontEx("Assets/HanaleiFill-Regular.ttf", 19, 0, 0);
+	sliders = LoadFontEx("Assets/HanaleiFill-Regular.ttf", 15, 0, 0);
 
 	//All rectangles here
 		//GameOverMenu
@@ -142,7 +143,7 @@ void UI::DrawBackground()
 		//Credits
 	DrawFadedRectangle(Credits, 7, MidBlue, LightBlue);
 	DrawRectangleRec(CreditsBackground, palette[LightGreen]);
-	renderer->DrawText("MADE BY:\nMINECRAFT PHYSICS.\n- FERNANDO\n- SHAHEER\n- JAVIER\n- ADRIA\n- JOAO", 1062, 29, credits, 2, palette[LightRed]);
+	renderer->DrawText("MADE BY:\nMINECRAFT PHYSICS.\n- FERNANDO\n- SHAHEER\n- JAVIER\n- ADRIA\n- JOAO", 1062, 27, credits, 2, palette[LightRed]);
 
 		//BallCounter
 	DrawFadedRectangle(BallCounter, 7, MidBlue, LightBlue);
@@ -169,6 +170,9 @@ void UI::DrawBackground()
 	DrawFadedRectangle(Sliders, 7, MidBlue, LightBlue);
 	DrawRectangleRec(SlidersBackground, palette[LightGreen]);
 	renderer->DrawText("SLIDERS", 100, 60 + 340, body, 2, palette[LightRed]);
+	float spacingY = 32.5;
+	float SliderY = GetMiddleHeight(SlidersBackground, 70 + spacingY * 7) + 27.5;
+	renderer->DrawText("FPS\n\nGravX\n\nGravY\n\nBallRes\n\nWallRes\n\nBumpRes\n\nFlipRes", 55, SliderY + spacingY - 5, sliders, 2, palette[LightRed]);
 }
 
 void UI::DrawFadedRectangleRounded(Rectangle rec, int fade, int startColorIndex, int endColorIndex) {
@@ -292,16 +296,16 @@ void UI::update() {//200, 190
 	
 	//Sliders
 	//TODO FPS, GRAVITY, BALL RESTITUTION, LEVEL RESTITUTION, BUMPER RESTITUTION
-	float SliderX = GetMiddleWidth(SlidersBackground, 100);
+	float SliderX = GetMiddleWidth(SlidersBackground, 100) + 25;
 	float spacingY = 32.5;
 	float SliderY = GetMiddleHeight(SlidersBackground, 70 + spacingY*7) + 27.5;
-	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 1, 100, 10 }, 0, 120, App->framesPerSecond, palette[MidBlue], palette[DarkBlue]);
-	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 2, 100, 10 }, -15, 15, App->gravity[0], palette[MidBlue], palette[DarkBlue]);
-	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 3, 100, 10 }, -15, 15, App->gravity[1], palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 1 - 3, 100, 10 }, 0, 120, App->framesPerSecond, palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 2 - 2, 100, 10 }, -15, 15, App->gravity[0], palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 3 - 1, 100, 10 }, -15, 15, App->gravity[1], palette[MidBlue], palette[DarkBlue]);
 	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 4, 100, 10 }, 0, 1, App->ballRestitution, palette[MidBlue], palette[DarkBlue]);
-	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 5, 100, 10 }, 0, 1, App->wallRestitution, palette[MidBlue], palette[DarkBlue]);
-	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 6, 100, 10 }, 0, 1, App->bumperRestitution, palette[MidBlue], palette[DarkBlue]);
-	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 7, 100, 10 }, 0, 1, App->fliperRestitution, palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 5 + 2, 100, 10 }, 0, 1, App->wallRestitution, palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 6 + 3, 100, 10 }, 0, 1, App->bumperRestitution, palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 7 + 4, 100, 10 }, 0, 1, App->fliperRestitution, palette[MidBlue], palette[DarkBlue]);
 
 
 	//GameOver
