@@ -70,7 +70,7 @@ bool Application::Init()
 update_status Application::Update()
 {
 	update_status ret = UPDATE_CONTINUE;
-	SetTargetFPS(framesPerSecond);
+	if (GetFPS() < (float)framesPerSecond-5 || GetFPS() > (float)framesPerSecond + 5) SetTargetFPS(framesPerSecond);
 	for (auto it = list_modules.begin(); it != list_modules.end() && ret == UPDATE_CONTINUE; ++it)
 	{
 		Module* module = *it;

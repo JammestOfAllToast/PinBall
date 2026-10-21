@@ -20,7 +20,7 @@ This project is was made as the practical part of our Physics II course in our B
 
  - Adria Pavon - Programmer
  - Fernando Garcia - Artist
- - Javier  - Artist / UI design / Level Design
+ - Javier Jimenez - Artist / UI design / Level Design
  - Joao de Queiroz - Programmer
  - Shaheer Ali - UI design / Level Design 
 

@@ -383,6 +383,38 @@ PhysBody* ModulePhysics::CreateChain(int x, int y, const int* points, int size)
 	return pbody;
 }
 
+PhysBody* ModulePhysics::CreateChainSensor(int x, int y, const int* points, int size)
+{
+	PhysBody* pbody = new PhysBody();
+
+	b2BodyDef body;
+	body.position.Set(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y));
+	body.userData.pointer = reinterpret_cast<uintptr_t>(pbody);
+
+	b2Body* b = world->CreateBody(&body);
+
+	int count = size / 2;
+	b2Vec2* vertices = new b2Vec2[count];
+	for (int i = 0; i < count; ++i)
+	{
+		vertices[i].x = PIXEL_TO_METERS(points[i * 2 + 0]);
+		vertices[i].y = PIXEL_TO_METERS(points[i * 2 + 1]);
+	}
+
+	b2ChainShape shape;
+	shape.CreateLoop(vertices, count);
+	delete[] vertices; // CreateLoop copies the vertices
+
+	b2FixtureDef fixture;
+	fixture.shape = &shape;
+	fixture.isSensor = true;
+	b->CreateFixture(&fixture);
+
+	pbody->body = b;
+
+	return pbody;
+}
+
 PhysBody* ModulePhysics::CreateChain(int x, int y, const int* points, int size, float _restitution)
 {
 	PhysBody* pbody = new PhysBody();
@@ -408,6 +440,71 @@ PhysBody* ModulePhysics::CreateChain(int x, int y, const int* points, int size, 
 	b2FixtureDef fixture;
 	fixture.restitution = _restitution;
 	fixture.shape = &shape;
+	b->CreateFixture(&fixture);
+
+	pbody->body = b;
+
+	return pbody;
+}
+
+PhysBody* ModulePhysics::CreatePolygon(int x, int y, const int* points, int size)
+{
+	PhysBody* pbody = new PhysBody();
+
+	b2BodyDef body;
+	body.type = b2_dynamicBody;
+	body.position.Set(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y));
+	body.userData.pointer = reinterpret_cast<uintptr_t>(pbody);
+
+	b2Body* b = world->CreateBody(&body);
+
+	int count = size / 2;
+	b2Vec2* vertices = new b2Vec2[count];
+	for (int i = 0; i < count; ++i)
+	{
+		vertices[i].x = PIXEL_TO_METERS(points[i * 2 + 0]);
+		vertices[i].y = PIXEL_TO_METERS(points[i * 2 + 1]);
+	}
+
+	b2PolygonShape shape;
+	shape.Set(vertices, count);
+	delete[] vertices;
+
+	b2FixtureDef fixture;
+	fixture.shape = &shape;
+	fixture.density = 1.0;
+	b->CreateFixture(&fixture);
+
+	pbody->body = b;
+
+	return pbody;
+}
+
+PhysBody* ModulePhysics::CreatePolygonSensor(int x, int y, const int* points, int size)
+{
+	PhysBody* pbody = new PhysBody();
+
+	b2BodyDef body;
+	body.position.Set(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y));
+	body.userData.pointer = reinterpret_cast<uintptr_t>(pbody);
+
+	b2Body* b = world->CreateBody(&body);
+
+	int count = size / 2;
+	b2Vec2* vertices = new b2Vec2[count];
+	for (int i = 0; i < count; ++i)
+	{
+		vertices[i].x = PIXEL_TO_METERS(points[i * 2 + 0]);
+		vertices[i].y = PIXEL_TO_METERS(points[i * 2 + 1]);
+	}
+
+	b2PolygonShape shape;
+	shape.Set(vertices, count);
+	delete[] vertices;
+
+	b2FixtureDef fixture;
+	fixture.shape = &shape;
+	fixture.isSensor = true;
 	b->CreateFixture(&fixture);
 
 	pbody->body = b;

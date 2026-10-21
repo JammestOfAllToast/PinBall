@@ -196,8 +196,8 @@ private:
 	b2RevoluteJoint* joint;
 	Texture2D texture;
 public:
-	Flipper(Application* _app, int _x, int _y, bool _side, Texture2D _texture)
-		: PhysicEntity(_app->physics->CreateRectangle(_x, _y, 50, 26))
+	Flipper(Application* _app, int _x, int _y, const int* points, int size, bool _side, Texture2D _texture)
+		: PhysicEntity(_app->physics->CreatePolygon(_x, _y, points, size))
 		, texture(_texture), side(_side)
 	{
 		App = _app;
@@ -219,7 +219,7 @@ public:
 		int x, y;
 		body->GetPosition(x, y);
 		joint->SetMotorSpeed(0);
-		if (App != NULL && wasFlip != flip) App->audio->PlayFx(App->scene_intro->flip_fx);
+		if (App != NULL && wasFlip != flip && !IsSoundPlaying(App->audio->fx[App->scene_intro->spring_rel_fx])) App->audio->PlayFx(App->scene_intro->flip_fx);
 		if (flip) {
 			
 			if (side == left) {
@@ -358,8 +358,8 @@ public:
 
 	}
 	//Overloaded so that sensors can now be crated the same way as normal bumpers!
-	Bumper(Application* _app, int _x, int _y, int _half_width, int _half_height, int _points)
-		: PhysicEntity(_app->physics->CreateRectangleSensor(_x, _y, _half_width, _half_height))
+	Bumper(Application* _app, int _x, int _y, const int* points, int size, int _points)
+		: PhysicEntity(_app->physics->CreatePolygonSensor(_x, _y, points, size))
 		, points(_points)
 	{
 		App = _app;
@@ -408,7 +408,7 @@ public:
 		Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
 		Rectangle dest = { (float)x, (float)y, (float)texture.width, (float)texture.height };
 		Vector2 origin = { (float)texture.width / 2.0f, (float)texture.height / 2.0f };
-		if (App->scene_intro->gameState != ModuleGame::GAMEOVER) DrawTexturePro(texture, source, dest, origin, body->GetRotation() * RAD2DEG, tint);
+		if (App != NULL && App->scene_intro->gameState != ModuleGame::GAMEOVER) DrawTexturePro(texture, source, dest, origin, body->GetRotation() * RAD2DEG, tint);
 	}
 
 private:
@@ -454,24 +454,25 @@ bool ModuleGame::Start()
 	//Death Sensor
 	deathSensor = App->physics->CreateRectangleSensor(SCREEN_WIDTH / 2, SCREEN_HEIGHT, SCREEN_WIDTH / 2, 40);
 
-	// Temp until we understand how scenes are implemented here
-	leftFlipper = new Flipper(App, 500, 300, false, box);
+	int f_p[8] = {-50, -25, -50, 25, 50, 15, 50, -15};
+	leftFlipper = new Flipper(App, 500, 300, f_p, 8, false, box);
 	entities.push_back(leftFlipper);
-
-	rightFlipper = new Flipper(App, 620, 300, true, box);
+	for (int i = 0; i < 8; i++) f_p[i] *= -1;
+	rightFlipper = new Flipper(App, 620, 300, f_p, 8, true, box);
 	entities.push_back(rightFlipper);
 
 
-	int p[16] = {40, 40,  40, 600,  480, 600,  480, 700,  800, 700,  800, 600,  1240, 600,  1240, 40};
-	worldBoundary = new Obstacle(App, 0, 0, p, 16);
+	int p1[16] = {40, 40,  40, 600,  480, 600,  480, 700,  800, 700,  800, 600,  1240, 600,  1240, 40};
+	worldBoundary = new Obstacle(App, 0, 0, p1, 16);
 	entities.push_back(worldBoundary);
 
 	spring = new Spring(App, 750, 200, box);
 	entities.push_back(spring);
 
+	int bumper_p1[10] = { 800, 500, 800, 400, 700, 400, 700, 500, 750, 550 };
 	bumpers.push_back(new Bumper(App, 50, 50, 50, circle));
 	bumpers.push_back(new Bumper(App, 100, 500, 50, circle));
-	bumpers.push_back(new Bumper(App, 800, 500, 100, 100, 10));
+	bumpers.push_back(new Bumper(App, 0, 0, bumper_p1, 10, 10));
 
 	for (int i = 0; i < bumpers.size(); i++) {
 		entities.push_back(bumpers[i]);
@@ -496,8 +497,8 @@ bool ModuleGame::CleanUp()
 
 	DestroyAllEntities();
 
-	//App->physics->DestroyBody(sensor);
-	//sensor = NULL;
+	App->physics->DestroyBody(deathSensor);
+	deathSensor = NULL;
 
 	UnloadTexture(circle);
 	UnloadTexture(box);
@@ -691,7 +692,10 @@ void ModuleGame::OnCollision(PhysBody* bodyA, PhysBody* bodyB)
 void ModuleGame::DestroyEntity(PhysicEntity* entity)
 {
 	entities.erase(std::find(entities.begin(), entities.end(), entity));
-	//bumpers.erase(std::find(bumpers.begin(), bumpers.end(), NULL));
+	for (std::vector<Bumper*>::iterator it = bumpers.begin(); it != bumpers.end();) {
+		if (*it == NULL) bumpers.erase(it);
+	}
+	
 	App->physics->DestroyBody(entity->body);
 	delete entity;
 }
@@ -704,6 +708,7 @@ void ModuleGame::DestroyAllEntities()
 		delete entity;
 	}
 	entities.clear();
+	bumpers.clear();
 	bodies_to_destroy.clear();
 }
 

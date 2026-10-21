@@ -299,7 +299,7 @@ void UI::update() {//200, 190
 	float SliderX = GetMiddleWidth(SlidersBackground, 100) + 25;
 	float spacingY = 32.5;
 	float SliderY = GetMiddleHeight(SlidersBackground, 70 + spacingY*7) + 27.5;
-	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 1 - 3, 100, 10 }, 0, 120, App->framesPerSecond, palette[MidBlue], palette[DarkBlue]);
+	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 1 - 3, 100, 10 }, 10, 60, App->framesPerSecond, palette[MidBlue], palette[DarkBlue]);
 	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 2 - 2, 100, 10 }, -15, 15, App->gravity[0], palette[MidBlue], palette[DarkBlue]);
 	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 3 - 1, 100, 10 }, -15, 15, App->gravity[1], palette[MidBlue], palette[DarkBlue]);
 	DrawSlider(Rectangle{ SliderX, SliderY + spacingY * 4, 100, 10 }, 0, 1, App->ballRestitution, palette[MidBlue], palette[DarkBlue]);
