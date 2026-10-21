@@ -66,7 +66,7 @@ bool ModulePhysics::Start()
 
 update_status ModulePhysics::PreUpdate()
 {
-	world->Step(App->framesPerSecond / 3600.0f, 8, 3);
+	world->Step(1 / (float)App->framesPerSecond, 8, 3);
 	if (world->GetGravity() != b2Vec2(App->gravity[0], App->gravity[1])) world->SetGravity(b2Vec2(App->gravity[0], App->gravity[1]));
 	return UPDATE_CONTINUE;
 }
