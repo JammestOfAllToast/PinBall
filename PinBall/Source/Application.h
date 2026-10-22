@@ -50,7 +50,7 @@ public:
 	float ballRestitution = 0.8f;
 	float wallRestitution = 0.8f;
 	float bumperRestitution = 1.0f;
-	float fliperRestitution = 0.0f;
+	float fliperRestitution = 0.1f;
 
 private:
 

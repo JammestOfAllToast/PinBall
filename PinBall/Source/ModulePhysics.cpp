@@ -490,12 +490,12 @@ PhysBody* ModulePhysics::CreateFlipper(int x, int y, const int* points, int size
 	body.userData.pointer = reinterpret_cast<uintptr_t>(pbody);
 
 	b2Body* b = world->CreateBody(&body);
-
+	TraceLog(LOG_INFO, "GABAGOOL%d\n", side ? 1 : -1);
 	int count = size / 2;
 	b2Vec2* vertices = new b2Vec2[count];
 	for (int i = 0; i < count; ++i)
 	{
-		vertices[i].x = PIXEL_TO_METERS(points[i * 2 + 0]);
+		vertices[i].x = PIXEL_TO_METERS((points[i * 2 + 0] + 45) * (side ? -1 : 1));
 		vertices[i].y = PIXEL_TO_METERS(points[i * 2 + 1]);
 	}
 

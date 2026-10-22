@@ -201,15 +201,16 @@ public:
 		, texture(_texture), side(_side)
 	{
 		App = _app;
-		body->body->SetGravityScale(0.0);
-		b2RevoluteJointDef revolute;
-		if (side) revolute.Initialize(_app->physics->ground, body->body, b2Vec2(0.8, 0) + body->body->GetWorldCenter());
-		else revolute.Initialize(_app->physics->ground, body->body, b2Vec2(-0.8, 0) + body->body->GetWorldCenter());
-		revolute.enableMotor = true;
-		revolute.maxMotorTorque = 100000.0f;
+		body->body->SetType(b2_kinematicBody);
+		//body->body->SetGravityScale(0.0);
+		//b2RevoluteJointDef revolute;
+		//revolute.Initialize(_app->physics->ground, body->body, body->body->GetWorldCenter());
+
+		//revolute.enableMotor = true;
+		//revolute.maxMotorTorque = 100000.0f;
 		//revolute.lowerAngle = side == left ? 0.25 : -0.25f * b2_pi;
 		//revolute.enableLimit = true; 
-		joint = (b2RevoluteJoint*)_app->physics->world->CreateJoint(&revolute);
+		//joint = (b2RevoluteJoint*)_app->physics->world->CreateJoint(&revolute);
 
 	}
 
@@ -218,27 +219,31 @@ public:
 
 		int x, y;
 		body->GetPosition(x, y);
-		joint->SetMotorSpeed(0);
-	/*	if (App != NULL && wasFlip != flip && !IsSoundPlaying(App->audio->fx[App->scene_intro->spring_rel_fx])) App->audio->PlayFx(App->scene_intro->flip_fx);
+		//joint->SetMotorSpeed(0);
+		body->body->SetAngularVelocity(0);
+		if (App != NULL && wasFlip != flip && !IsSoundPlaying(App->audio->fx[App->scene_intro->spring_rel_fx])) App->audio->PlayFx(App->scene_intro->flip_fx);
 		if (flip) {
 			
 			if (side == left) {
-				if (joint->GetJointAngle() >= -limit * b2_pi) joint->SetMotorSpeed(-speed);
+				if (body->body->GetAngle() >= -limit * b2_pi) body->body->SetAngularVelocity(-speed); //joint->SetMotorSpeed(-speed);
 				
 			}
 			else {
-				if (joint->GetJointAngle() <= limit * b2_pi) joint->SetMotorSpeed(speed);
+				if (body->body->GetAngle() <= limit * b2_pi) body->body->SetAngularVelocity(speed); //joint->SetMotorSpeed(speed);
 			}
 			
 		}
 		else {
 			if (side == left) {
-				if (joint->GetJointAngle() <= limit * b2_pi) joint->SetMotorSpeed(speed);
+				if (body->body->GetAngle() <= limit * b2_pi) body->body->SetAngularVelocity(speed);//joint->SetMotorSpeed(speed);
 			}
 			else {
-				if (joint->GetJointAngle() >= -limit * b2_pi) joint->SetMotorSpeed(-speed);
+				if (body->body->GetAngle() >= -limit * b2_pi) body->body->SetAngularVelocity(-speed);//joint->SetMotorSpeed(-speed);
 			}
-		}*/
+		}
+
+		if (body->body->GetAngle() > limit * b2_pi) body->body->SetTransform(b2Vec2(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y)), limit * b2_pi);
+		if (body->body->GetAngle() < -limit * b2_pi) body->body->SetTransform(b2Vec2(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y)), -limit * b2_pi);
 		
 
 		Color tint = WHITE;
@@ -456,11 +461,13 @@ bool ModuleGame::Start()
 	//Death Sensor
 	deathSensor = App->physics->CreateRectangleSensor(SCREEN_WIDTH / 2, SCREEN_HEIGHT, SCREEN_WIDTH / 2, 40);
 
-	int f_pL[16] = {509, 534,  613.5, 534,  620.5, 539,  618, 547,  609, 555,  501, 570,  486, 560,  487, 545.5};
-	leftFlipper = new Flipper(App, 0, 0, f_pL, 16, false, box);
+	//int f_p[16] = { 0, 0,  104, 0,  111, 5,  109, 13,  100, 21,  -8, 36,  -23, 26,  -22, 11 };
+	int f_p[16] = { -45, -18,  59, -18,  66, -13,  64, -5,  55, 3,  -53, 18,  -68, 8,  -67, -7  };
+
+	
+	leftFlipper = new Flipper(App, 640-130, 552, f_p, 16, false, box);
 	entities.push_back(leftFlipper);
-	int f_pR[16] = {666.5, 534,  767.5, 534,  793, 545.5,  794, 560,  779, 570,  671, 555,  662, 546.5,  659.5, 539};
-	rightFlipper = new Flipper(App, 0, 0, f_pR, 16, true, box);
+	rightFlipper = new Flipper(App, 640+130, 552, f_p, 16, true, box);
 	entities.push_back(rightFlipper);
 
 	//PinballBoard
@@ -701,7 +708,6 @@ update_status ModuleGame::Update()
 			DrawLine((int)(ray.x + destination.x), (int)(ray.y + destination.y), (int)(ray.x + destination.x + normal.x * 25.0f), (int)(ray.y + destination.y + normal.y * 25.0f), Color{ 100, 255, 100, 255 });
 		}
 	}
-
 	return UPDATE_CONTINUE;
 }
 
@@ -849,7 +855,6 @@ void ModuleGame::loadLeaderboard() {
 		Leader l;
 		char buffer[4];
 		for (int i = 0; i < data.length(); i++) {
-			std::cout << data[i] << " " << i << "\n";
 			if (i < 3) l.name[i] = data.c_str()[i];
 			else buffer[i-3] = data.c_str()[i];
 		}
