@@ -202,48 +202,47 @@ public:
 	{
 		App = _app;
 		body->body->SetType(b2_kinematicBody);
-		//body->body->SetGravityScale(0.0);
-		//b2RevoluteJointDef revolute;
-		//revolute.Initialize(_app->physics->ground, body->body, body->body->GetWorldCenter());
-
-		//revolute.enableMotor = true;
-		//revolute.maxMotorTorque = 100000.0f;
-		//revolute.lowerAngle = side == left ? 0.25 : -0.25f * b2_pi;
-		//revolute.enableLimit = true; 
-		//joint = (b2RevoluteJoint*)_app->physics->world->CreateJoint(&revolute);
-
+		
 	}
 
 	void Update() override {
 		if (App != NULL && body->body->GetFixtureList()[0].GetRestitution() != App->fliperRestitution) body->body->GetFixtureList()[0].SetRestitution(App->fliperRestitution);
 
+		std::cout << "left?: " << side << ": " <<"flip: " << flip << std::endl<< body->body->GetAngularVelocity() << std::endl;
 		int x, y;
 		body->GetPosition(x, y);
-		//joint->SetMotorSpeed(0);
-		body->body->SetAngularVelocity(0);
 		if (App != NULL && wasFlip != flip && !IsSoundPlaying(App->audio->fx[App->scene_intro->spring_rel_fx])) App->audio->PlayFx(App->scene_intro->flip_fx);
+	
+		bool l = body->body->GetAngle() < -limit * b2_pi;
+		bool g = body->body->GetAngle() > limit * b2_pi;
+		bool le = body->body->GetAngle() <= -limit * b2_pi;
+		bool ge = body->body->GetAngle() >= limit * b2_pi;
+
 		if (flip) {
-			
 			if (side == left) {
-				if (body->body->GetAngle() >= -limit * b2_pi) body->body->SetAngularVelocity(-speed); //joint->SetMotorSpeed(-speed);
-				
+				if (body->body->GetAngle() >= -limit * b2_pi && !le) body->body->SetAngularVelocity(-speed); //joint->SetMotorSpeed(-speed);
+
 			}
 			else {
-				if (body->body->GetAngle() <= limit * b2_pi) body->body->SetAngularVelocity(speed); //joint->SetMotorSpeed(speed);
+				if (body->body->GetAngle() <= limit * b2_pi && !ge) body->body->SetAngularVelocity(speed); //joint->SetMotorSpeed(speed);
 			}
-			
 		}
 		else {
 			if (side == left) {
-				if (body->body->GetAngle() <= limit * b2_pi) body->body->SetAngularVelocity(speed);//joint->SetMotorSpeed(speed);
+				if (body->body->GetAngle() <= limit * b2_pi && !ge) body->body->SetAngularVelocity(speed);//joint->SetMotorSpeed(speed);
 			}
 			else {
-				if (body->body->GetAngle() >= -limit * b2_pi) body->body->SetAngularVelocity(-speed);//joint->SetMotorSpeed(-speed);
+				if (body->body->GetAngle() >= -limit * b2_pi && !le) body->body->SetAngularVelocity(-speed);//joint->SetMotorSpeed(-speed);
 			}
 		}
+		
+		if (l || g)
+		{
+			body->body->SetAngularVelocity(0);
+			if (g) body->body->SetTransform(b2Vec2(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y)), limit * b2_pi);
+			if (l) body->body->SetTransform(b2Vec2(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y)), -limit * b2_pi);
+		}
 
-		if (body->body->GetAngle() > limit * b2_pi) body->body->SetTransform(b2Vec2(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y)), limit * b2_pi);
-		if (body->body->GetAngle() < -limit * b2_pi) body->body->SetTransform(b2Vec2(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y)), -limit * b2_pi);
 		
 
 		Color tint = WHITE;
