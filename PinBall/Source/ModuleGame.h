@@ -52,7 +52,9 @@ public:
 	std::vector<Bumper*> bumpers;
 
 	Texture2D circle;
+	Texture2D circleSmall;
 	Texture2D box;
+	Texture2D springText;
 	Texture2D rick;
 
 	uint32 bonus_fx;

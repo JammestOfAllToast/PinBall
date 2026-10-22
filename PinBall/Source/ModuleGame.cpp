@@ -268,7 +268,7 @@ private:
 	int max_y = 300;
 
 public:
-	Spring(Application* _app, int _x, int _y, Texture2D _texture) : PhysicEntity(_app->physics->CreateRectangle(_x, _y, 20, 20)), texture(_texture) {
+	Spring(Application* _app, int _x, int _y, Texture2D _texture) : PhysicEntity(_app->physics->CreateRectangle(_x, _y, 16, 8)), texture(_texture) {
 		App = _app;
 		body->body->SetGravityScale(0.0);
 		initial_y = _y;
@@ -351,7 +351,7 @@ public:
 	int points;
 
 	Bumper(Application* _app, int _x, int _y, int _points, Texture2D _texture)
-		: PhysicEntity(_app->physics->CreateCircle(_x, _y, 25, 0.5, b2_kinematicBody))
+		: PhysicEntity(_app->physics->CreateCircle(_x, _y, 28, 0.5, b2_kinematicBody))
 		, texture(_texture), points(_points)
 	{
 		App = _app;
@@ -387,7 +387,7 @@ class Ball : public PhysicEntity
 {
 public:
 	Ball(Application* _app, Texture2D _texture)
-		: PhysicEntity(_app->physics->CreateCircle(100, 100, 25, 0, b2_dynamicBody))
+		: PhysicEntity(_app->physics->CreateCircle(100, 100, 10, 0, b2_dynamicBody))
 		, texture(_texture)
 	{
 		App = _app;
@@ -439,8 +439,10 @@ bool ModuleGame::Start()
 
 	App->renderer->camera.x = App->renderer->camera.y = 0;
 
-	circle = LoadTexture("Assets/wheel.png");
+	circle = LoadTexture("Assets/BumpersPlaceHolder.png");
+	circleSmall = LoadTexture("Assets/PinballPlaceHolder.png");
 	box = LoadTexture("Assets/crate.png");
+	springText = LoadTexture("Assets/SpringPlaceHolder.png");
 	rick = LoadTexture("Assets/rick_head.png");
 
 	bonus_fx = App->audio->LoadFx("Assets/bonus.wav");
@@ -454,31 +456,66 @@ bool ModuleGame::Start()
 	//Death Sensor
 	deathSensor = App->physics->CreateRectangleSensor(SCREEN_WIDTH / 2, SCREEN_HEIGHT, SCREEN_WIDTH / 2, 40);
 
-	int f_p[8] = {-50, -25, -50, 25, 50, 15, 50, -15};
-	leftFlipper = new Flipper(App, 500, 300, f_p, 8, false, box);
-	entities.push_back(leftFlipper);
-	for (int i = 0; i < 8; i++) f_p[i] *= -1;
-	rightFlipper = new Flipper(App, 620, 300, f_p, 8, true, box);
+	int f_pR[16] = {792.5, 534.5,  824.5, 536,  834, 552,  822.5, 572.5,  687.5, 615,  672, 611,  664.5, 603,  670, 593.5};
+	rightFlipper = new Flipper(App, 0, 0, f_pR, 16, true, box);
 	entities.push_back(rightFlipper);
+	int f_pL[16] = {460.5, 536,  492.5, 534.5,  613.5, 593.5,  619, 603,  611.5, 611,  596, 615,  462.5, 572.5,  451, 552};
+	leftFlipper = new Flipper(App, 0, 0, f_pL, 16, false, box);
+	entities.push_back(leftFlipper);
 
-
-	int p1[16] = {40, 40,  40, 600,  480, 600,  480, 700,  800, 700,  800, 600,  1240, 600,  1240, 40};
-	worldBoundary = new Obstacle(App, 0, 0, p1, 16);
+	//PinballBoard
+	int p[8] = { 306, 26,  306, 694,  966, 694,  966, 26 };
+	worldBoundary = new Obstacle(App, 0, 0, p, 8);
 	entities.push_back(worldBoundary);
 
-	spring = new Spring(App, 750, 200, box);
+	//Spring
+	spring = new Spring(App, 934+16, 378+4, springText);
 	entities.push_back(spring);
 
+	//Obstacles
+	int p1[16] = {786, 526.5,  919.5, 472,  919.5, 238.5,  933, 238.5,  934, 694,  919.5, 694,  919.5, 483,  789.5, 535}; 
+	entities.push_back(new Obstacle(App, 0, 0, p1, 16));
+	int p2[8] = {679, 623,  685.5, 623,  674, 694,  666.5, 694};
+	entities.push_back(new Obstacle(App, 0, 0, p2, 8));
+	int p3[22] = {351, 467,  492, 523,  489, 531,  366, 483,  366, 578,  596.5, 646.5,  593, 623,  600.5, 623,  605.5, 655,  600.5, 658,  351, 585};
+	entities.push_back(new Obstacle(App, 0, 0, p3, 22));
+	int p4[60] = {295.5, 17.5,  964.5, 17.5,  967, 200.5,  884, 85,  819, 58.5,  745, 35.5,  608, 29,  526, 52,  464, 83.5,  439, 60,  416, 51.5,  393, 43,  372.5, 43,  335.5, 56,  304.5, 95,  310, 140,  364.5, 188.5,  335.5, 210,  315, 244.5,  315, 277.5,  329.5, 305.5,  362.5, 331,  367, 349.5,  343.5, 366.5,  329.5, 385.5,  323.5, 405,  319, 474,  319, 664,  600, 694,  306, 694};
+	entities.push_back(new Obstacle(App, 0, 0, p4, 60));
+	int p5[20] = {429.5, 240,  437, 254,  412, 272,  396.5, 293,  392.5, 312.5,  398.5, 339,  388, 327,  382, 300.5,  386, 281,  401.5, 260};
+	entities.push_back(new Obstacle(App, 0, 0, p5, 20));
+	int p6[16] = {439.5, 364,  454.5, 387.5,  476.5, 405,  497.5, 416,  497.5, 428.5,  474.86, 417.5,  451.14, 400, 434.97, 376.5};
+	entities.push_back(new Obstacle(App, 0, 0, p6, 16));
+	int p7[16] = {392, 368.5,  400, 393.5,  416, 419,  448.5, 445,  450, 457.5,  410.5, 428.5,  394.22, 400.83,  389, 375};
+	entities.push_back(new Obstacle(App, 0, 0, p7, 16));
+	/*int p8[12] = {511.5, 94,  552.5, 72,  612, 57.5,  614.5, 78,  555, 92.5,  514, 114.5};
+	entities.push_back(new Obstacle(App, 0, 0, p8, 12));
+	int p9[12] = {690.5, 54.5,  742.5, 65,  792, 85,  786.5, 108.5,  737, 88.5,  685, 78};
+	entities.push_back(new Obstacle(App, 0, 0, p9, 12));
+	int p10[12] = {838.5, 116,  877.5, 146.5,  903, 186.5,  894.5, 198.5,  865, 159.5,  829, 131};
+	int p10[12] = {838, 154.5,  865, 169,  896.5, 163.5,  896.5, 177,  865, 184.5,  838, 169};
+	entities.push_back(new Obstacle(App, 0, 25, p10, 12));*/
+	int p11[24] = {776, 186.5,  837.7, 231.1,  881.4, 295.1,  889.5, 371.5,  866, 427.5,  810.5, 483,  802.5, 478.5,  854, 424.5,  876, 371.5,  863.5, 300.5,  820, 240.5,  767.5, 202};
+	entities.push_back(new Obstacle(App, 0, 0, p11, 24));
+
+	//Bumpers
+	bumpers.push_back(new Bumper(App, 472, 116, 50, circle));
+	bumpers.push_back(new Bumper(App, 612, 116, 50, circle));
+	bumpers.push_back(new Bumper(App, 752, 116, 50, circle));
+	bumpers.push_back(new Bumper(App, 542, 175, 50, circle));
+	bumpers.push_back(new Bumper(App, 682, 175, 50, circle));
+	bumpers.push_back(new Bumper(App, 612, 231, 50, circle));
+	bumpers.push_back(new Bumper(App, 537, 320, 50, circle));
+	bumpers.push_back(new Bumper(App, 677, 320, 50, circle));
+	
+	/*PointsArea
 	int bumper_p1[10] = { 800, 500, 800, 400, 700, 400, 700, 500, 750, 550 };
-	bumpers.push_back(new Bumper(App, 50, 50, 50, circle));
-	bumpers.push_back(new Bumper(App, 100, 500, 50, circle));
-	bumpers.push_back(new Bumper(App, 0, 0, bumper_p1, 10, 10));
+	bumpers.push_back(new Bumper(App, 0, 0, bumper_p1, 10, 10));*/
 
 	for (int i = 0; i < bumpers.size(); i++) {
 		entities.push_back(bumpers[i]);
 	}
 
-	ball = new Ball(App, circle);
+	ball = new Ball(App, circleSmall);
 	ball->body->listener = this;
 	entities.push_back(ball);
 
