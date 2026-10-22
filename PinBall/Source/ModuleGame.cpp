@@ -832,6 +832,7 @@ void ModuleGame::NextBall() {
 }
 
 void ModuleGame::saveLeaderboard() {
+	if (leaderboard.size() == 0) return;
 	std::ofstream SaveFile(savefile, std::ios::binary);
 	for (Leader l : leaderboard) {
 		for (int i = 0; i < 3; i++) {
