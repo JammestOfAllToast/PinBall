@@ -456,12 +456,12 @@ bool ModuleGame::Start()
 	//Death Sensor
 	deathSensor = App->physics->CreateRectangleSensor(SCREEN_WIDTH / 2, SCREEN_HEIGHT, SCREEN_WIDTH / 2, 40);
 
-	int f_pR[16] = {792.5, 534.5,  824.5, 536,  834, 552,  822.5, 572.5,  687.5, 615,  672, 611,  664.5, 603,  670, 593.5};
-	rightFlipper = new Flipper(App, 0, 0, f_pR, 16, true, box);
-	entities.push_back(rightFlipper);
-	int f_pL[16] = {460.5, 536,  492.5, 534.5,  613.5, 593.5,  619, 603,  611.5, 611,  596, 615,  462.5, 572.5,  451, 552};
+	int f_pL[16] = {509, 534,  613.5, 534,  620.5, 539,  618, 547,  609, 555,  501, 570,  486, 560,  487, 545.5};
 	leftFlipper = new Flipper(App, 0, 0, f_pL, 16, false, box);
 	entities.push_back(leftFlipper);
+	int f_pR[16] = {666.5, 534,  767.5, 534,  793, 545.5,  794, 560,  779, 570,  671, 555,  662, 546.5,  659.5, 539};
+	rightFlipper = new Flipper(App, 0, 0, f_pR, 16, true, box);
+	entities.push_back(rightFlipper);
 
 	//PinballBoard
 	int p[8] = { 306, 26,  306, 694,  966, 694,  966, 26 };
