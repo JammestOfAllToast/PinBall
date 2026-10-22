@@ -197,7 +197,7 @@ private:
 	Texture2D texture;
 public:
 	Flipper(Application* _app, int _x, int _y, const int* points, int size, bool _side, Texture2D _texture)
-		: PhysicEntity(_app->physics->CreatePolygon(_x, _y, points, size))
+		: PhysicEntity(_app->physics->CreateFlipper(_x, _y, points, size, _side))
 		, texture(_texture), side(_side)
 	{
 		App = _app;
@@ -219,7 +219,7 @@ public:
 		int x, y;
 		body->GetPosition(x, y);
 		joint->SetMotorSpeed(0);
-		if (App != NULL && wasFlip != flip && !IsSoundPlaying(App->audio->fx[App->scene_intro->spring_rel_fx])) App->audio->PlayFx(App->scene_intro->flip_fx);
+	/*	if (App != NULL && wasFlip != flip && !IsSoundPlaying(App->audio->fx[App->scene_intro->spring_rel_fx])) App->audio->PlayFx(App->scene_intro->flip_fx);
 		if (flip) {
 			
 			if (side == left) {
@@ -238,7 +238,7 @@ public:
 			else {
 				if (joint->GetJointAngle() >= -limit * b2_pi) joint->SetMotorSpeed(-speed);
 			}
-		}
+		}*/
 		
 
 		Color tint = WHITE;
@@ -457,6 +457,7 @@ bool ModuleGame::Start()
 	deathSensor = App->physics->CreateRectangleSensor(SCREEN_WIDTH / 2, SCREEN_HEIGHT, SCREEN_WIDTH / 2, 40);
 
 	int f_pR[16] = {792.5, 534.5,  824.5, 536,  834, 552,  822.5, 572.5,  687.5, 615,  672, 611,  664.5, 603,  670, 593.5};
+
 	rightFlipper = new Flipper(App, 0, 0, f_pR, 16, true, box);
 	entities.push_back(rightFlipper);
 	int f_pL[16] = {460.5, 536,  492.5, 534.5,  613.5, 593.5,  619, 603,  611.5, 611,  596, 615,  462.5, 572.5,  451, 552};

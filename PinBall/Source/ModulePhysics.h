@@ -57,6 +57,7 @@ public:
 	PhysBody* CreateChainSensor(int x, int y, const int* points, int size);
 	PhysBody* CreatePolygon(int x, int y, const int* points, int size);
 	PhysBody* CreatePolygonSensor(int x, int y, const int* points, int size);
+	PhysBody* CreateFlipper(int x, int y, const int* points, int size, bool side);
 
 	void DestroyBody(PhysBody* pbody);
 
