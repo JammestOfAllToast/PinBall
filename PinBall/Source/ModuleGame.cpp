@@ -207,8 +207,6 @@ public:
 
 	void Update() override {
 		if (App != NULL && body->body->GetFixtureList()[0].GetRestitution() != App->fliperRestitution) body->body->GetFixtureList()[0].SetRestitution(App->fliperRestitution);
-
-		std::cout << "left?: " << side << ": " <<"flip: " << flip << std::endl<< body->body->GetAngularVelocity() << std::endl;
 		int x, y;
 		body->GetPosition(x, y);
 		if (App != NULL && wasFlip != flip && !IsSoundPlaying(App->audio->fx[App->scene_intro->spring_rel_fx])) App->audio->PlayFx(App->scene_intro->flip_fx);
@@ -827,7 +825,7 @@ void ModuleGame::NextBall() {
 	ball->body->body->SetLinearVelocity(b2Vec2_zero);
 	ball->body->body->SetAngularVelocity(0);
 	
-	ball->body->body->SetTransform(b2Vec2(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y) - 2), 0);
+	ball->body->body->SetTransform(b2Vec2(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y) - 0.5), 0);
 }
 
 void ModuleGame::saveLeaderboard() {
