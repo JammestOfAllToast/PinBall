@@ -451,7 +451,6 @@ bool ModuleGame::Start()
 	bump_fx = App->audio->LoadFx("Assets/snd_metalhit_bc.wav");
 	flip_fx = App->audio->LoadFx("Assets/snd_dooropen.wav");
 	music_fx = LoadMusicStream("Assets/music.mp3");
-	music2_fx = LoadMusicStream("Assets/musicgalaxy.wav");
 
 	//Death Sensor
 	deathSensor = App->physics->CreateRectangleSensor(SCREEN_WIDTH / 2, SCREEN_HEIGHT, SCREEN_WIDTH / 2, 40);
@@ -490,10 +489,8 @@ bool ModuleGame::Start()
 	Reset();
 
 	
-	//PlayMusicStream(music2_fx); // Mario galaxy music (top tier)
-	PlayMusicStream(music_fx); // To be continued
+	PlayMusicStream(music_fx);
 	SetMusicVolume(music_fx, 1.0f);
-	SetMusicVolume(music2_fx, 1.0f);
 	return ret;
 }
 
@@ -511,7 +508,6 @@ bool ModuleGame::CleanUp()
 	UnloadTexture(box);
 	UnloadTexture(rick);
 	UnloadMusicStream(music_fx); // Needed so you don't fuck up RAM -Dr.D
-	UnloadMusicStream(music2_fx); // Would do a "UnloadMusicArray" function but really we're gonna have one track so no need -Dr.D
 	delete ui;
 	return true;
 }
@@ -519,8 +515,7 @@ bool ModuleGame::CleanUp()
 // Update: draw background
 update_status ModuleGame::Update()
 {
-	UpdateMusicStream(music_fx);
-	UpdateMusicStream(music2_fx);
+	UpdateMusicStream(music_fx); // Needed for some reason -Dr.D
 	
 	if (ui != NULL) {
 		ui->DrawBackground();
