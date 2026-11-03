@@ -540,10 +540,6 @@ update_status ModuleGame::Update()
 		ray.x = GetMouseX();
 		ray.y = GetMouseY();
 	}
-	if (IsKeyPressed(KEY_FOUR))
-	{
-		gameState = GAMEOVER;
-	}
 	if (IsKeyPressed(KEY_TAB))
 	{
 		saveLeaderboard();
