@@ -1,14 +1,15 @@
-# Minecraft Physics' Pinball
+# Aztec Balls.
 
 ## Description
 
-This project is was made as the practical part of our Physics II course in our Bachelour's Degree in Game design at CITM. It uses Box2D as its physics library and raylib as its audiovisual library.
+This project is was made as the practical part of our Physics II course in our Bachelour's Degree in Game design at CITM. It uses Box2D as its physics library and raylib as its audiovisual library. This project is a physics simulation of a classic pinball game. It is based off pinball games such as "3D space cadet pinball".
 
 ## Key Features
 
  - Kicker
  - Flipper
  - Bumpers / Points Sensors
+ - Sliders to tweak some values like gravity.
  - Saved Leaderboard with alltime highscores
  
 ## Controls
@@ -18,10 +19,10 @@ This project is was made as the practical part of our Physics II course in our B
 
 ## Developers
 
- - Adria Pavon - Programmer
+ - Adrià Pavón - Programmer / SFX Artist
  - Fernando Garcia - Artist
  - Javier Jimenez - Artist / UI design / Level Design
- - Joao de Queiroz - Programmer
+ - João de Queiroz - Programmer
  - Shaheer Ali - UI design / Level Design 
 
 ## License
