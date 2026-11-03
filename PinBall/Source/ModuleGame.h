@@ -67,6 +67,7 @@ public:
 	uint32 enter_fx;
 	uint32 bump_fx;
 	uint32 flip_fx;
+	Music music_fx;
 
 	vec2<int> ray;
 	bool ray_on;
