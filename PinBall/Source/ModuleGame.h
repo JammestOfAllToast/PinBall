@@ -71,6 +71,8 @@ public:
 	uint32 enter_fx;
 	uint32 bump_fx;
 	uint32 flip_fx;
+	uint32 idol_fx;
+	uint32 ball_up_fx;
 	Music music_fx;
 
 	vec2<int> ray;

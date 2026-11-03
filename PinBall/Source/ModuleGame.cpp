@@ -541,6 +541,8 @@ bool ModuleGame::Start()
 	enter_fx = App->audio->LoadFx("Assets/snd_select.wav");
 	bump_fx = App->audio->LoadFx("Assets/snd_metalhit_bc.wav");
 	flip_fx = App->audio->LoadFx("Assets/snd_dooropen.wav");
+	idol_fx = App->audio->LoadFx("Assets/snd_shineselect.wav");
+	ball_up_fx = App->audio->LoadFx("Assets/snd_egg.wav");
 	music_fx = LoadMusicStream("Assets/music.mp3");
 
 	//Death Sensor
@@ -724,6 +726,7 @@ update_status ModuleGame::Update()
 	if (idolsHit >= 3) {
 		lives++;
 		idolsHit = 0;
+		App->audio->PlayFx(ball_up_fx);
 	}
 
 	int key;
@@ -850,14 +853,19 @@ void ModuleGame::OnCollision(PhysBody* bodyA, PhysBody* bodyB)
 	if (bodyB == idol1->body && !idol1->hit) {
 		idol1->hit = true;
 		idolsHit++;
+		App->audio->PlayFx(idol_fx);
 	}
 	if (bodyB == idol2->body && !idol2->hit) {
 		idol2->hit = true;
 		idolsHit++;
+		App->audio->PlayFx(idol_fx);
+
 	}
 	if (bodyB == idol3->body && !idol3->hit) {
 		idol3->hit = true;
 		idolsHit++;
+		App->audio->PlayFx(idol_fx);
+
 	}
 	
 
