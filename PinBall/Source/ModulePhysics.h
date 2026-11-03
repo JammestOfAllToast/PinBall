@@ -66,7 +66,7 @@ public:
 	b2World* world;
 	b2Body* ground;
 
-	bool debug;
+	bool debug = false;
 
 private:
 
