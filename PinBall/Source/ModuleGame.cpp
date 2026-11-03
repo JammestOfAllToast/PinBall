@@ -458,6 +458,34 @@ private:
 	Texture2D texture;
 };
 
+class Idol : public PhysicEntity {
+private:
+	Texture2D texture;
+	Application* App;
+	const double hit_duration = 0.1; // seconds the hit sprite stays on screen
+public:
+	bool hit = false;
+	Idol(Application* _app, int _x, int _y, Texture2D _texture)
+		: PhysicEntity(_app->physics->CreateRectangleSensor(_x, _y, 96/2, 96/2))
+	{
+		App = _app;
+		texture = _texture;
+
+	}
+
+	void Update() override
+	{
+		int x, y;
+		body->GetPosition(x, y);
+		Color tint = WHITE;
+		y += sin(GetTime()*2 + x)*5;
+		// Box2D positions are the center of the body: draw the texture around its center
+		Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
+		Rectangle dest = { (float)x, (float)y, (float)texture.width, (float)texture.height };
+		Vector2 origin = { (float)texture.width / 2.0f, (float)texture.height / 2.0f };
+		if (!hit) DrawTexturePro(texture, source, dest, origin, body->GetRotation() * RAD2DEG, tint);
+	}
+};
 // -------- END OUR ENTITIES ------
 
 ModuleGame::ModuleGame(Application* app, bool start_enabled) : Module(app, start_enabled)
@@ -489,6 +517,9 @@ bool ModuleGame::Start()
 	rick = LoadTexture("Assets/rick_head.png");
 	bumperSprite = LoadTexture("Assets/Bumper_Sprite.png");
 	bumperHitSprite = LoadTexture("Assets/Bumper_Hit_Sprite.png");
+	idolText_1 = LoadTexture("Assets/Aztec_1.png");
+	idolText_2 = LoadTexture("Assets/Aztec_2.png");
+	idolText_3 = LoadTexture("Assets/Aztec_3.png");
 
 	// Point filter keeps the pixel art sharp
 	SetTextureFilter(circle, TEXTURE_FILTER_POINT);
@@ -499,6 +530,9 @@ bool ModuleGame::Start()
 	SetTextureFilter(rick, TEXTURE_FILTER_POINT);
 	SetTextureFilter(bumperSprite, TEXTURE_FILTER_POINT);
 	SetTextureFilter(bumperHitSprite, TEXTURE_FILTER_POINT);
+	SetTextureFilter(idolText_1, TEXTURE_FILTER_POINT);
+	SetTextureFilter(idolText_2, TEXTURE_FILTER_POINT);
+	SetTextureFilter(idolText_3, TEXTURE_FILTER_POINT);
 
 	bonus_fx = App->audio->LoadFx("Assets/bonus.wav");
 	spring_ret_fx = App->audio->LoadFx("Assets/snd_chain_extend.wav");
@@ -574,6 +608,14 @@ bool ModuleGame::Start()
 		entities.push_back(bumpers[i]);
 	}
 
+	//Idols
+	idol1 = new Idol(App, 800, 360, idolText_1);
+	idol2 = new Idol(App, 640, 500, idolText_2);
+	idol3 = new Idol(App, 380, 100, idolText_3);
+	entities.push_back(idol1);
+	entities.push_back(idol2);
+	entities.push_back(idol3);
+
 	ball = new Ball(App, circleSmall);
 	ball->body->listener = this;
 	entities.push_back(ball);
@@ -607,6 +649,9 @@ bool ModuleGame::CleanUp()
 	UnloadTexture(springCoil);
 	UnloadTexture(bumperSprite);
 	UnloadTexture(bumperHitSprite);
+	UnloadTexture(idolText_1);
+	UnloadTexture(idolText_2);
+	UnloadTexture(idolText_3);
 	UnloadMusicStream(music_fx); // Needed so you don't fuck up RAM -Dr.D
 	delete ui;
 	return true;
@@ -676,6 +721,11 @@ update_status ModuleGame::Update()
 		DestroyAllEntities();
 	}
 
+	if (idolsHit >= 3) {
+		lives++;
+		idolsHit = 0;
+	}
+
 	int key;
 	switch (gameState) {
 	case RESET:
@@ -688,6 +738,10 @@ update_status ModuleGame::Update()
 		spring->Retract(IsKeyDown(KEY_SPACE));
 		break;
 	case GAMEOVER:
+		idolsHit = 0;
+		idol1->hit = false;
+		idol2->hit = false;
+		idol3->hit = false;
 		key = GetCharPressed();
 		while (key > 0) {
 			if ((key >= 32) && (key <= 125) && (ui->GOnameSize < 3)) {
@@ -792,6 +846,20 @@ void ModuleGame::OnCollision(PhysBody* bodyA, PhysBody* bodyB)
 			return;
 		}
 	}
+
+	if (bodyB == idol1->body && !idol1->hit) {
+		idol1->hit = true;
+		idolsHit++;
+	}
+	if (bodyB == idol2->body && !idol2->hit) {
+		idol2->hit = true;
+		idolsHit++;
+	}
+	if (bodyB == idol3->body && !idol3->hit) {
+		idol3->hit = true;
+		idolsHit++;
+	}
+	
 
 	//App->audio->PlayFx(bonus_fx);
 }

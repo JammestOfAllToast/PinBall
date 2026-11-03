@@ -23,6 +23,7 @@ class Spring;
 class Bumper;
 class Ball;
 class UI;
+class Idol;
 
 class ModuleGame : public Module
 {
@@ -59,6 +60,9 @@ public:
 	Texture2D rick;
 	Texture2D bumperSprite;
 	Texture2D bumperHitSprite;
+	Texture2D idolText_1;
+	Texture2D idolText_2;
+	Texture2D idolText_3;
 
 	uint32 bonus_fx;
 	uint32 spring_ret_fx;
@@ -95,6 +99,11 @@ private:
 	Obstacle* worldBoundary = NULL;
 	PhysBody* deathSensor = NULL;
 	Ball* ball = NULL;
+	Idol* idol1 = NULL;
+	Idol* idol2 = NULL;
+	Idol* idol3 = NULL;
+	int idolsHit = 0;
+
 
 	char* savefile = "save.bin";
 };
