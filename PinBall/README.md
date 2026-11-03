@@ -9,6 +9,7 @@ This project is was made as the practical part of our Physics II course in our B
  - Kicker
  - Flipper
  - Bumpers / Points Sensors
+ - Idols (Gives one extra ball if all are collected)
  - Sliders to tweak some values like gravity.
  - Saved Leaderboard with alltime highscores
  
