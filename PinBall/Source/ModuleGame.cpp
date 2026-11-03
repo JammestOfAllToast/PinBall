@@ -568,7 +568,7 @@ update_status ModuleGame::Update()
 	}
 	bodies_to_destroy.clear();
 
-	if (IsKeyPressed(KEY_SPACE))
+	if (App->physics->debug && IsKeyPressed(KEY_SPACE))
 	{
 		ray_on = !ray_on;
 		ray.x = GetMouseX();

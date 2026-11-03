@@ -66,9 +66,11 @@ public:
 	b2World* world;
 	b2Body* ground;
 
+	bool debug;
+
 private:
 
-	bool debug;
+	
 	
 
 	// Static body with no fixtures, needed to create joints like the mouse joint
