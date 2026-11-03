@@ -15,7 +15,7 @@ This project is was made as the practical part of our Physics II course in our B
 ## Controls
 
  - Left / Right to activate Flippers
- - Space to retract Kicker
+ - Down to retract Kicker
 
 ## Developers
 

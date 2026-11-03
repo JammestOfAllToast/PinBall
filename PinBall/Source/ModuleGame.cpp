@@ -570,7 +570,7 @@ update_status ModuleGame::Update()
 		leftFlipper->SetFlip(IsKeyDown(KEY_LEFT));
 		rightFlipper->SetFlip(IsKeyDown(KEY_RIGHT));
 
-		spring->Retract(IsKeyDown(KEY_SPACE));
+		spring->Retract(IsKeyDown(KEY_DOWN));
 		break;
 	case GAMEOVER:
 		idolsHit = 0;
