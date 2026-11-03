@@ -55,7 +55,10 @@ public:
 	Texture2D circleSmall;
 	Texture2D box;
 	Texture2D springText;
+	Texture2D springCoil;
 	Texture2D rick;
+	Texture2D bumperSprite;
+	Texture2D bumperHitSprite;
 
 	uint32 bonus_fx;
 	uint32 spring_ret_fx;

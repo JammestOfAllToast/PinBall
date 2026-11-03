@@ -24,6 +24,28 @@ void UI::Start(Application* _app) {
 	body = LoadFontEx("Assets/HanaleiFill-Regular.ttf", 27, 0, 0);
 	credits = LoadFontEx("Assets/HanaleiFill-Regular.ttf", 19, 0, 0);
 	sliders = LoadFontEx("Assets/HanaleiFill-Regular.ttf", 15, 0, 0);
+	background = LoadTexture("Assets/Background_Sprite.png");
+	SetTextureFilter(background, TEXTURE_FILTER_POINT);
+	board = LoadTexture("Assets/Board_Sprite.png");
+	SetTextureFilter(board, TEXTURE_FILTER_POINT);
+	walls = LoadTexture("Assets/Walls_Sprite.png");
+	SetTextureFilter(walls, TEXTURE_FILTER_POINT);
+	creditsPanel = LoadTexture("Assets/Credits_Panel_Sprite.png");
+	ballCounterPanel = LoadTexture("Assets/BallCounter_Panel_Sprite.png");
+	currentScorePanel = LoadTexture("Assets/CurrentScore_Panel_Sprite.png");
+	previousScorePanel = LoadTexture("Assets/PreviousScore_Panel_Sprite.png");
+	leaderboardPanel = LoadTexture("Assets/Leaderboard_Panel_Sprite.png");
+	slidersPanel = LoadTexture("Assets/Sliders_Panel_Sprite.png");
+	SetTextureFilter(creditsPanel, TEXTURE_FILTER_POINT);
+	SetTextureFilter(ballCounterPanel, TEXTURE_FILTER_POINT);
+	SetTextureFilter(currentScorePanel, TEXTURE_FILTER_POINT);
+	SetTextureFilter(previousScorePanel, TEXTURE_FILTER_POINT);
+	SetTextureFilter(leaderboardPanel, TEXTURE_FILTER_POINT);
+	SetTextureFilter(slidersPanel, TEXTURE_FILTER_POINT);
+	sliderBar = LoadTexture("Assets/Slider_Bar_Sprite.png");
+	sliderHandle = LoadTexture("Assets/Slider_Handle_Sprite.png");
+	SetTextureFilter(sliderBar, TEXTURE_FILTER_POINT);
+	SetTextureFilter(sliderHandle, TEXTURE_FILTER_POINT);
 
 	//All rectangles here
 		//GameOverMenu
@@ -133,42 +155,37 @@ void UI::DrawBackground()
 	if (App == NULL) return;
 
 	//Right/LeftUIBackground
-	DrawRectangleRec(BlueBackground, palette[DarkBlue]);
+	DrawRectangleRec(BlueBackground, palette[DarkBlue]); // fallback while the sprite is missing
+	renderer->Draw(background, BlueBackground.x, BlueBackground.y);
 
 	//PinballBoard
-	DrawFadedRectangle(PinballBoard, 16, DarkGreen, MidGreen);
-	DrawRectangleRec(PinballBoardBackground, palette[MidBeige]);
+	renderer->Draw(board, PinballBoard.x, PinballBoard.y);
+	renderer->Draw(walls, PinballBoard.x, PinballBoard.y);
 
 	//RightUI
 		//Credits
-	DrawFadedRectangle(Credits, 7, MidBlue, LightBlue);
-	DrawRectangleRec(CreditsBackground, palette[LightGreen]);
+	renderer->Draw(creditsPanel, Credits.x, Credits.y);
 	renderer->DrawText("MADE BY:\nMINECRAFT PHYSICS.\n- FERNANDO\n- SHAHEER\n- JAVIER\n- ADRIA\n- JOAO", 1062, 27, credits, 2, palette[LightRed]);
 
 		//BallCounter
-	DrawFadedRectangle(BallCounter, 7, MidBlue, LightBlue);
-	DrawRectangleRec(BallCounterBackground, palette[LightGreen]);
+	renderer->Draw(ballCounterPanel, BallCounter.x, BallCounter.y);
 	renderer->DrawText("BALLS COUNTER", 1063, 272, body, 2, palette[LightRed]);
 
 		//CurrentScore
-	DrawFadedRectangle(CurrentScore, 7, MidBlue, LightBlue);
-	DrawRectangleRec(CurrentScoreBackground, palette[LightGreen]);
+	renderer->Draw(currentScorePanel, CurrentScore.x, CurrentScore.y);
 	renderer->DrawText("CURRENT SCORE", 1062, 272 + 146, body, 2, palette[LightRed]);
 
 		//PreviousScore
-	DrawFadedRectangle(PreviousScore, 7, MidBlue, LightBlue);
-	DrawRectangleRec(PreviousScoreBackground, palette[LightGreen]);
+	renderer->Draw(previousScorePanel, PreviousScore.x, PreviousScore.y);
 	renderer->DrawText("PREVIOUS SCORE", 1059, 272 + 146*2, body, 2, palette[LightRed]);
 
 	//LeftUI
 		//LeaderBoard
-	DrawFadedRectangle(Leaderboard, 7, MidBlue, LightBlue);
-	DrawRectangleRec(LeaderboardBackground, palette[LightGreen]);
+	renderer->Draw(leaderboardPanel, Leaderboard.x, Leaderboard.y);
 	renderer->DrawText("LEADERBOARD", 77,  60, body, 2, palette[LightRed]);
 
 		//Sliders
-	DrawFadedRectangle(Sliders, 7, MidBlue, LightBlue);
-	DrawRectangleRec(SlidersBackground, palette[LightGreen]);
+	renderer->Draw(slidersPanel, Sliders.x, Sliders.y);
 	renderer->DrawText("SLIDERS", 100, 60 + 340, body, 2, palette[LightRed]);
 	float spacingY = 32.5;
 	float SliderY = GetMiddleHeight(SlidersBackground, 70 + spacingY * 7) + 27.5;
@@ -218,8 +235,9 @@ void UI::DrawSlider(Rectangle rec, float min, float max, float& value, Color bg,
 		}
 	}
 	Rectangle handleRec = { rec.x + (value - min) / (max - min) * rec.width - handleSize / 2, rec.y - 5, handleSize, handleSize };
-	DrawRectangleRec(rec, bg);
-	DrawRectangleRec(handleRec, handle);
+	// Rounded so the sprites stay on whole pixels
+	renderer->Draw(sliderBar, (int)(rec.x + 0.5f), (int)(rec.y + 0.5f));
+	renderer->Draw(sliderHandle, (int)(handleRec.x + 0.5f), (int)(handleRec.y + 0.5f));
 	std::string s = std::to_string(value);;
 	for (int i = 0; i < 5; i++) s.pop_back();
 	renderer->DrawText(s.c_str(), GetMiddleWidth(handleRec, handleSize - 10), GetMiddleHeight(handleRec, handleSize - 10), GetFontDefault(), 2, palette[LightBeige]);
@@ -242,8 +260,9 @@ void UI::DrawSlider(Rectangle rec, float min, float max, int& value, Color bg, C
 		}
 	}
 	Rectangle handleRec = { rec.x + (value - min) / (max - min) * rec.width - handleSize / 2, rec.y - 5, handleSize, handleSize };
-	DrawRectangleRec(rec, bg);
-	DrawRectangleRec(handleRec, handle);
+	// Rounded so the sprites stay on whole pixels
+	renderer->Draw(sliderBar, (int)(rec.x + 0.5f), (int)(rec.y + 0.5f));
+	renderer->Draw(sliderHandle, (int)(handleRec.x + 0.5f), (int)(handleRec.y + 0.5f));
 	std::string s = std::to_string(value);
 	renderer->DrawText(s.c_str(), GetMiddleWidth(handleRec, handleSize - 10), GetMiddleHeight(handleRec, handleSize - 10), GetFontDefault(), 2, palette[LightBeige]);
 }
@@ -260,7 +279,18 @@ UI::~UI() {
 	UnloadFont(title);
 	UnloadFont(body);
 	UnloadFont(credits);
-	
+	UnloadTexture(background);
+	UnloadTexture(board);
+	UnloadTexture(walls);
+	UnloadTexture(creditsPanel);
+	UnloadTexture(ballCounterPanel);
+	UnloadTexture(currentScorePanel);
+	UnloadTexture(previousScorePanel);
+	UnloadTexture(leaderboardPanel);
+	UnloadTexture(slidersPanel);
+	UnloadTexture(sliderBar);
+	UnloadTexture(sliderHandle);
+
 }
 
 

@@ -5,6 +5,7 @@
 #include "ModuleAudio.h"
 #include "ModulePhysics.h"
 #include "UI.h"
+#include "Timer.h"
 
 #include <algorithm>
 #include <fstream>
@@ -189,7 +190,8 @@ private:
 	const bool right = 1;
 
 	const float speed = 7.5f * b2_pi;
-	const float limit = 0.25;
+	const float limit = 0.25;      // angle (in pi radians) when the flipper is activated
+	const float rest_limit = 0.2f; // angle (in pi radians) at rest, lower than limit so it rests higher
 	bool flip;
 	bool wasFlip;
 
@@ -211,43 +213,55 @@ public:
 		body->GetPosition(x, y);
 		if (App != NULL && wasFlip != flip && !IsSoundPlaying(App->audio->fx[App->scene_intro->spring_rel_fx])) App->audio->PlayFx(App->scene_intro->flip_fx);
 	
-		bool l = body->body->GetAngle() < -limit * b2_pi;
-		bool g = body->body->GetAngle() > limit * b2_pi;
-		bool le = body->body->GetAngle() <= -limit * b2_pi;
-		bool ge = body->body->GetAngle() >= limit * b2_pi;
+		// Lower and upper angle of each flipper: the active one uses limit, the resting one rest_limit
+		float min_angle = -(side == left ? limit : rest_limit) * b2_pi;
+		float max_angle = (side == left ? rest_limit : limit) * b2_pi;
+
+		bool l = body->body->GetAngle() < min_angle;
+		bool g = body->body->GetAngle() > max_angle;
+		bool le = body->body->GetAngle() <= min_angle;
+		bool ge = body->body->GetAngle() >= max_angle;
 
 		if (flip) {
 			if (side == left) {
-				if (body->body->GetAngle() >= -limit * b2_pi && !le) body->body->SetAngularVelocity(-speed); //joint->SetMotorSpeed(-speed);
+				if (body->body->GetAngle() >= min_angle && !le) body->body->SetAngularVelocity(-speed); //joint->SetMotorSpeed(-speed);
 
 			}
 			else {
-				if (body->body->GetAngle() <= limit * b2_pi && !ge) body->body->SetAngularVelocity(speed); //joint->SetMotorSpeed(speed);
+				if (body->body->GetAngle() <= max_angle && !ge) body->body->SetAngularVelocity(speed); //joint->SetMotorSpeed(speed);
 			}
 		}
 		else {
 			if (side == left) {
-				if (body->body->GetAngle() <= limit * b2_pi && !ge) body->body->SetAngularVelocity(speed);//joint->SetMotorSpeed(speed);
+				if (body->body->GetAngle() <= max_angle && !ge) body->body->SetAngularVelocity(speed);//joint->SetMotorSpeed(speed);
 			}
 			else {
-				if (body->body->GetAngle() >= -limit * b2_pi && !le) body->body->SetAngularVelocity(-speed);//joint->SetMotorSpeed(-speed);
+				if (body->body->GetAngle() >= min_angle && !le) body->body->SetAngularVelocity(-speed);//joint->SetMotorSpeed(-speed);
 			}
 		}
-		
+
 		if (l || g)
 		{
 			body->body->SetAngularVelocity(0);
-			if (g) body->body->SetTransform(b2Vec2(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y)), limit * b2_pi);
-			if (l) body->body->SetTransform(b2Vec2(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y)), -limit * b2_pi);
+			if (g) body->body->SetTransform(b2Vec2(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y)), max_angle);
+			if (l) body->body->SetTransform(b2Vec2(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y)), min_angle);
 		}
 
 		
 
 		Color tint = WHITE;
 
+		// The sprite is drawn like the left flipper (tip to the right). The pivot (body origin)
+		// is 23 px from the back edge and 18 px from the top. The right flipper mirrors it.
+		const float pivot_x = 23.0f;
+		const float pivot_y = 18.0f;
 		Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
 		Rectangle dest = { (float)x, (float)y, (float)texture.width, (float)texture.height };
-		Vector2 origin = { (float)texture.width / 2.0f, (float)texture.height / 2.0f };
+		Vector2 origin = { pivot_x, pivot_y };
+		if (side == right) {
+			source.width = -source.width;
+			origin.x = (float)texture.width - pivot_x;
+		}
 		DrawTexturePro(texture, source, dest, origin, body->GetRotation() * RAD2DEG, tint);
 		wasFlip = flip;
 	}
@@ -263,14 +277,17 @@ private:
 	Application* App;
 	b2PrismaticJoint* joint;
 	Texture2D texture;
+	Texture2D coil_texture;
 	float k = 5;
 	bool ret;
 	bool wasRet;
 	int initial_y;
 	int max_y = 300;
+	const int coil_count = 25;  // coils drawn between the head and the floor
+	const int floor_y = 694;    // bottom of the board where the spring is anchored
 
 public:
-	Spring(Application* _app, int _x, int _y, Texture2D _texture) : PhysicEntity(_app->physics->CreateRectangle(_x, _y, 16, 8)), texture(_texture) {
+	Spring(Application* _app, int _x, int _y, Texture2D _texture, Texture2D _coil_texture) : PhysicEntity(_app->physics->CreateRectangle(_x, _y, 16, 8)), texture(_texture), coil_texture(_coil_texture) {
 		App = _app;
 		body->body->SetGravityScale(0.0);
 		initial_y = _y;
@@ -315,6 +332,15 @@ public:
 		wasRet = ret;
 		Color tint = WHITE;
 
+		// Coils go from just under the head to the floor, evenly spread: when the head goes down
+		// they get closer and overlap. Integer positions keep the pixel art sharp.
+		int head_bottom = y + texture.height / 2;
+		int travel = floor_y - head_bottom - coil_texture.height;
+		for (int i = coil_count - 1; i >= 0; i--) {
+			int coil_y = head_bottom + (i * travel) / (coil_count - 1);
+			DrawTexture(coil_texture, x - coil_texture.width / 2, coil_y, tint);
+		}
+
 		Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
 		Rectangle dest = { (float)x, (float)y, (float)texture.width, (float)texture.height };
 		Vector2 origin = { (float)texture.width / 2.0f, (float)texture.height / 2.0f };
@@ -348,16 +374,27 @@ public:
 class Bumper : public PhysicEntity {
 private:
 	Texture2D texture;
+	Texture2D hit_texture;
 	Application* App;
+	Timer hit_timer;
+	bool hit = false;
+	const double hit_duration = 0.1; // seconds the hit sprite stays on screen
 public:
 	int points;
 
-	Bumper(Application* _app, int _x, int _y, int _points, Texture2D _texture)
+	Bumper(Application* _app, int _x, int _y, int _points, Texture2D _texture, Texture2D _hit_texture)
 		: PhysicEntity(_app->physics->CreateCircle(_x, _y, 28, 0.5, b2_kinematicBody))
-		, texture(_texture), points(_points)
+		, texture(_texture), hit_texture(_hit_texture), points(_points)
 	{
 		App = _app;
 
+	}
+
+	// Shows the hit sprite for a short time
+	void Hit()
+	{
+		hit = true;
+		hit_timer.Start();
 	}
 	//Overloaded so that sensors can now be crated the same way as normal bumpers!
 	Bumper(Application* _app, int _x, int _y, const int* points, int size, int _points)
@@ -375,13 +412,16 @@ public:
 		body->body->SetBullet(true);
 		if (App != NULL && body->body->GetFixtureList()[0].GetRestitution() != App->bumperRestitution) body->body->GetFixtureList()[0].SetRestitution(App->bumperRestitution);
 
+		if (hit && hit_timer.ReadSec() >= hit_duration) hit = false;
+		Texture2D current = hit ? hit_texture : texture;
+
 		Color tint = WHITE;
 
 		// Box2D positions are the center of the body: draw the texture around its center
-		Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
-		Rectangle dest = { (float)x, (float)y, (float)texture.width, (float)texture.height };
-		Vector2 origin = { (float)texture.width / 2.0f, (float)texture.height / 2.0f };
-		DrawTexturePro(texture, source, dest, origin, body->GetRotation() * RAD2DEG, tint);
+		Rectangle source = { 0.0f, 0.0f, (float)current.width, (float)current.height };
+		Rectangle dest = { (float)x, (float)y, (float)current.width, (float)current.height };
+		Vector2 origin = { (float)current.width / 2.0f, (float)current.height / 2.0f };
+		DrawTexturePro(current, source, dest, origin, body->GetRotation() * RAD2DEG, tint);
 	}
 };
 
@@ -444,8 +484,21 @@ bool ModuleGame::Start()
 	circle = LoadTexture("Assets/BumpersPlaceHolder.png");
 	circleSmall = LoadTexture("Assets/PinballPlaceHolder.png");
 	box = LoadTexture("Assets/crate.png");
-	springText = LoadTexture("Assets/SpringPlaceHolder.png");
+	springText = LoadTexture("Assets/Spring_Head_Sprite.png");
+	springCoil = LoadTexture("Assets/Spring_Coil_Sprite.png");
 	rick = LoadTexture("Assets/rick_head.png");
+	bumperSprite = LoadTexture("Assets/Bumper_Sprite.png");
+	bumperHitSprite = LoadTexture("Assets/Bumper_Hit_Sprite.png");
+
+	// Point filter keeps the pixel art sharp
+	SetTextureFilter(circle, TEXTURE_FILTER_POINT);
+	SetTextureFilter(circleSmall, TEXTURE_FILTER_POINT);
+	SetTextureFilter(box, TEXTURE_FILTER_POINT);
+	SetTextureFilter(springText, TEXTURE_FILTER_POINT);
+	SetTextureFilter(springCoil, TEXTURE_FILTER_POINT);
+	SetTextureFilter(rick, TEXTURE_FILTER_POINT);
+	SetTextureFilter(bumperSprite, TEXTURE_FILTER_POINT);
+	SetTextureFilter(bumperHitSprite, TEXTURE_FILTER_POINT);
 
 	bonus_fx = App->audio->LoadFx("Assets/bonus.wav");
 	spring_ret_fx = App->audio->LoadFx("Assets/snd_chain_extend.wav");
@@ -459,10 +512,11 @@ bool ModuleGame::Start()
 	deathSensor = App->physics->CreateRectangleSensor(SCREEN_WIDTH / 2, SCREEN_HEIGHT, SCREEN_WIDTH / 2, 40);
 
 	//int f_p[16] = { 0, 0,  104, 0,  111, 5,  109, 13,  100, 21,  -8, 36,  -23, 26,  -22, 11 };
-	int f_p[16] = { -45, -18,  59, -18,  66, -13,  64, -5,  55, 3,  -53, 18,  -68, 8,  -67, -7  };
+	//int f_p[16] = { -45, -18,  59, -18,  66, -13,  64, -5,  55, 3,  -53, 18,  -68, 8,  -67, -7  };
+	int f_p[16] = { -67, -10,  -56, -18,  60, -11,  68, 8,  59, 14,  -29, 18,  -60, 18,  -68, 9 }; // follows the flipper sprite
 
 	
-	leftFlipper = new Flipper(App, 640-130, 552, f_p, 16, false, box);
+	leftFlipper = new Flipper(App, 640-130+5, 552, f_p, 16, false, box);
 	entities.push_back(leftFlipper);
 	rightFlipper = new Flipper(App, 640+130, 552, f_p, 16, true, box);
 	entities.push_back(rightFlipper);
@@ -473,7 +527,7 @@ bool ModuleGame::Start()
 	entities.push_back(worldBoundary);
 
 	//Spring
-	spring = new Spring(App, 934+16, 378+4, springText);
+	spring = new Spring(App, 934+16, 378+4, springText, springCoil);
 	entities.push_back(spring);
 
 	//Obstacles
@@ -502,14 +556,14 @@ bool ModuleGame::Start()
 	entities.push_back(new Obstacle(App, 0, 0, p11, 24));
 
 	//Bumpers
-	bumpers.push_back(new Bumper(App, 472, 116, 50, circle));
-	bumpers.push_back(new Bumper(App, 612, 116, 50, circle));
-	bumpers.push_back(new Bumper(App, 752, 116, 50, circle));
-	bumpers.push_back(new Bumper(App, 542, 175, 50, circle));
-	bumpers.push_back(new Bumper(App, 682, 175, 50, circle));
-	bumpers.push_back(new Bumper(App, 612, 231, 50, circle));
-	bumpers.push_back(new Bumper(App, 537, 320, 50, circle));
-	bumpers.push_back(new Bumper(App, 677, 320, 50, circle));
+	bumpers.push_back(new Bumper(App, 472, 116, 50, bumperSprite, bumperHitSprite));
+	bumpers.push_back(new Bumper(App, 612, 116, 50, bumperSprite, bumperHitSprite));
+	bumpers.push_back(new Bumper(App, 752, 116, 50, bumperSprite, bumperHitSprite));
+	bumpers.push_back(new Bumper(App, 542, 175, 50, bumperSprite, bumperHitSprite));
+	bumpers.push_back(new Bumper(App, 682, 175, 50, bumperSprite, bumperHitSprite));
+	bumpers.push_back(new Bumper(App, 612, 231, 50, bumperSprite, bumperHitSprite));
+	bumpers.push_back(new Bumper(App, 537, 320, 50, bumperSprite, bumperHitSprite));
+	bumpers.push_back(new Bumper(App, 677, 320, 50, bumperSprite, bumperHitSprite));
 	
 	/*PointsArea
 	int bumper_p1[10] = { 800, 500, 800, 400, 700, 400, 700, 500, 750, 550 };
@@ -544,6 +598,10 @@ bool ModuleGame::CleanUp()
 	UnloadTexture(circle);
 	UnloadTexture(box);
 	UnloadTexture(rick);
+	UnloadTexture(springText);
+	UnloadTexture(springCoil);
+	UnloadTexture(bumperSprite);
+	UnloadTexture(bumperHitSprite);
 	delete ui;
 	return true;
 }
@@ -720,6 +778,7 @@ void ModuleGame::OnCollision(PhysBody* bodyA, PhysBody* bodyB)
 	for (Bumper* bumper : bumpers) {
 		if (bodyB == bumper->body) {
 			App->audio->PlayFx(bump_fx);
+			bumper->Hit();
 			score += bumper->points;
 			TraceLog(LOG_INFO, "BALL HIT MUMPER!: SCORE: %d", score);
 			return;

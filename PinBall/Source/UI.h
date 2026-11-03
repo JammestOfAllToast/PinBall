@@ -15,6 +15,17 @@ private:
 	Font body;
 	Font credits;
 	Font sliders;
+	Texture2D background;
+	Texture2D board;
+	Texture2D walls;
+	Texture2D creditsPanel;
+	Texture2D ballCounterPanel;
+	Texture2D currentScorePanel;
+	Texture2D previousScorePanel;
+	Texture2D leaderboardPanel;
+	Texture2D slidersPanel;
+	Texture2D sliderBar;
+	Texture2D sliderHandle;
 	enum colorKey {
 		DarkBlue, MidBlue, LightBlue,
 		DarkRed, MidRed, LightRed,
